@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+input::placeholder {
+  color: rgba(0, 64, 101, 0.3);
+}
+
+.rem:hover {
+  color: #004065 !important;
+}
+
+.qbtn:hover {
+  background: #f8e3e8 !important;
+  border-color: #ec9cb2 !important;
+}
+
+.gobtn:hover {
+  filter: brightness(1.07);
+}
+
+@media (max-width: 820px) {
+  .cgrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .th-p,
+  .th-q,
+  .th-s,
+  .td-p,
+  .td-q,
+  .td-s {
+    display: none !important;
+  }
+
+  .trow {
+    grid-template-columns: 1fr !important;
+  }
+}

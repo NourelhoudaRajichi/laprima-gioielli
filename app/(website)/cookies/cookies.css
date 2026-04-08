@@ -1,0 +1,73 @@
+/* Target the iubenda container */
+#iub-legalDoc {
+  /* Force Inter font for all text */
+  font-family: 'Inter', sans-serif !important;
+
+  /* Force font weight */
+  font-weight: 400 !important;
+
+  /* Force text color */
+  color: #004065 !important; 
+
+  /* Remove background color */
+  background: #fff !important;
+
+  /* Optional: override CSS variables */
+  --green: white !important;
+  --green-light: white !important;
+  --green-dark: white !important;
+  --red: white !important;
+  --blue: white !important;
+  --yellow: white !important;
+  --purple: white !important;
+  --orange: white !important;
+  --gray-4: #004065 !important;
+  --gray-3: #004065 !important;
+  --gray-2: #004065 !important;
+  --gray-1: #004065 !important;
+  --black: #004065 !important;
+  --black-dark: #004065 !important;
+  --black-light: #004065 !important;
+  --white: #fff !important;
+  --legal-gray: #ccc !important;
+  --legal-gray-light: #f8f9fb !important;
+  --pills-gray: #f6f6f6 !important;
+  --details-box-gray: #fafafc !important;
+}
+#iub-legalDoc h1::before,
+#iub-legalDoc h2::before,
+#iub-legalDoc h3::before,
+#iub-legalDoc h4::before {
+    display: none !important;
+}
+.pre-footer {
+    display: none !important;
+}
+
+#iub-legalDoc .data-we-collect-card header::before {
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none"><g clip-path="url(%23a)" stroke="%23004065" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.75 40.5a5.25 5.25 0 1 0 0-10.5 5.25 5.25 0 0 0 0 10.5ZM12.75 18a5.25 5.25 0 1 0 0-10.5 5.25 5.25 0 0 0 0 10.5ZM35.25 31.5a5.25 5.25 0 1 0 0-10.5 5.25 5.25 0 0 0 0 10.5Z"/><path d="M30 27h-5.531a8.962 8.962 0 0 1-6.919-3.244L12.75 18v12"/></g><defs><clipPath id="a"><path fill="%23fff" d="M0 0h48v48H0z"/></clipPath></defs></svg>') !important;
+}
+#iub-legalDoc .data-you-give-to-us-card header::before {
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="none"><path d="M19 25a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15Z" stroke="%23000" stroke-width="1.5" stroke-miterlimit="10"/><path d="M6.963 32.389a13.5 13.5 0 0 1 24.075 0M28 5.5h9M32.5 1v9" stroke="%23004065" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M36.775 16.169A18 18 0 1 1 21.831 1.225" stroke="%23000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
+}
+#iub-legalDoc .check-style-list li:before {
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none"><circle cx="11" cy="11" r="11" fill="%23004065"/><path d="m15.75 8-6.506 6L6 11" stroke="%23fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>') !important;
+    display: block !important;
+    width: 22px !important;
+    height: 22px !important;
+    margin-top: 1px !important;
+}
+#iub-legalDoc .legalDoc__accordion[open] summary {
+    background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none"><g clip-path="url(%23a)" stroke="%23004065" stroke-width="1.5"><path d="M20 35c8.284 0 15-6.716 15-15 0-8.284-6.716-15-15-15-8.284 0-15 6.716-15 15 0 8.284 6.716 15 15 15Z" stroke-miterlimit="10"/><path d="M13.75 20h12.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="a"><path fill="%23fff" d="M0 0h40v40H0z"/></clipPath></defs></svg>') !important;
+  
+}
+#iub-legalDoc .legalDoc__accordion summary {
+    align-items: center;
+    background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none"><g clip-path="url(%23a)" stroke="%23004065" stroke-width="1.5"><path d="M20 35c8.284 0 15-6.716 15-15 0-8.284-6.716-15-15-15-8.284 0-15 6.716-15 15 0 8.284 6.716 15 15 15Z" stroke-miterlimit="10"/><path d="M13.75 20h12.5M20 13.75v12.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="a"><path fill="%23fff" d="M0 0h40v40H0z"/></clipPath></defs></svg>')!important;
+    background-position: top -4px right -4px;
+    background-repeat: no-repeat;
+    background-size: auto;
+    cursor: pointer;
+    display: flex;
+    gap: calc(var(--spacer) * 1.5);
+}

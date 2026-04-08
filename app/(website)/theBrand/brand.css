@@ -1,0 +1,52 @@
+@keyframes imgIn {
+          from { opacity: 0; transform: scale(1.025); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        .img-in { animation: imgIn 0.85s cubic-bezier(0.4,0,0.2,1) both; }
+
+        /* Chapter row hover/active states */
+        .chapter-row { cursor: pointer; transition: all 0.3s ease; }
+
+        .subtitle-row {
+          cursor: pointer;
+          transition: all 0.35s ease;
+          padding: 12px 0 12px 20px;
+          border-left: 2px solid transparent;
+        }
+        .subtitle-row:hover,
+        .subtitle-row.active {
+          border-left-color: #ec9cb2;
+        }
+        .subtitle-row .sub-label {
+          transition: color 0.3s ease, font-size 0.3s ease;
+          color: rgba(0,64,101,0.3);
+          font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+          font-family: var(--font-barlow, 'Barlow Condensed', sans-serif);
+          font-weight: 300;
+          line-height: 1.2;
+          margin: 0;
+        }
+        .subtitle-row:hover .sub-label {
+          color: rgba(0,64,101,0.6);
+        }
+        .subtitle-row.active .sub-label {
+          color: #004065;
+          font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+        }
+
+        /* Learn More row inside active subtitle */
+        .learn-row {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          overflow: hidden;
+          max-height: 0;
+          opacity: 0;
+          margin-top: 0;
+          transition: max-height 0.4s ease, opacity 0.4s ease, margin-top 0.4s ease;
+        }
+        .subtitle-row.active .learn-row {
+          max-height: 28px;
+          opacity: 1;
+          margin-top: 10px;
+        }
