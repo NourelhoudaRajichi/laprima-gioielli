@@ -7,4 +7,3 @@ export default async function PrivacyPolicyPage() {
   return <PrivacyPolicy settings={settings} authors={authors} />;
 }
 
-// export const revalidate = 60;

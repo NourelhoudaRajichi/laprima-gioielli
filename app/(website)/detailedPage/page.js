@@ -1,10 +1,10 @@
-import { getAllAuthors, getSettings } from "@/lib/sanity/client";
+import { Suspense } from "react";
 import DetailedPage from "./detailedPage";
 
-export default async function detailPage() {
-  const authors = await getAllAuthors();
-  const settings = await getSettings();
-  return <DetailedPage settings={settings} authors={authors} />;
+export default function DetailPage() {
+  return (
+    <Suspense>
+      <DetailedPage />
+    </Suspense>
+  );
 }
-
-// export const revalidate = 60;

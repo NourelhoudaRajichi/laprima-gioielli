@@ -7,4 +7,3 @@ export default async function TermsPage() {
   return <Terms settings={settings} authors={authors} />;
 }
 
-// export const revalidate = 60;

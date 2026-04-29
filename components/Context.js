@@ -29,6 +29,7 @@ export function CartProvider({ children }) {
           id: product.id,
           name: product.name,
           price: product.price,
+          sku: product.sku || "",
           variationName: variation.name,
           image: variation.defaultImage,
           quantity: 1
@@ -56,6 +57,8 @@ export function CartProvider({ children }) {
       )
     );
   };
+
+  const clearCart = () => setCartItems([]);
 
   const totalCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -103,6 +106,7 @@ export function CartProvider({ children }) {
         addToCart,
         removeFromCart,
         updateQuantity,
+        clearCart,
         totalCount,
         totalPrice,
         wishlistItems,

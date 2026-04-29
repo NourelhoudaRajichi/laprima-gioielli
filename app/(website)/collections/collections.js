@@ -1,11 +1,18 @@
 "use client";
 
-
-import { React,useRef } from "react";
+import { React, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
-export default function CollectionsPage() {
-  const categories = [
+import { useLanguage } from "@/components/LanguageContext";
+
+const fallbackImages = [
+  { id:1, image:"https://laprimagioielli.com/wp-content/uploads/2025/08/7929B100-97F6-4D59-8A15-C20A0AAD1459-m-683x1024.jpg", link:"/bangles",   key:"bangles"   },
+  { id:2, image:"https://laprimagioielli.com/wp-content/uploads/2025/08/943CF260-52E4-4227-A4B7-6E5F1DDE4D83-m-683x1024.jpg", link:"/bracelets", key:"bracelets" },
+  { id:3, image:"https://laprimagioielli.com/wp-content/uploads/2025/08/1139905C-4954-4BB8-B105-BCBC0EB8BB6A-s.jpg",           link:"/earrings",  key:"earrings"  },
+  { id:4, image:"https://laprimagioielli.com/wp-content/uploads/2025/08/DB334A47-6E63-4BE9-B343-5ABD1BCC7F3A-m-2-683x1024.jpg",link:"/necklaces", key:"necklaces" },
+];
+
+const placeholder = [
     {
       id: 1,
       title: "BANGLES",
@@ -35,6 +42,19 @@ export default function CollectionsPage() {
       link: "/necklaces"
     }
   ];
+
+export default function CollectionsPage({ collections }) {
+  const { t } = useLanguage();
+
+  const categories = collections
+    ? collections.map((c, i) => ({
+        id: c.databaseId ?? i,
+        title: c.title?.toUpperCase(),
+        image: c.featuredImage?.node?.sourceUrl ?? "",
+        link: c.collectionFields?.link ?? `/${c.slug}`,
+      }))
+    : fallbackImages.map(f => ({ ...f, title: t.home[f.key] }));
+
  const ref = useRef(null);
 
   // Use viewport scroll instead of element target
@@ -110,16 +130,13 @@ export default function CollectionsPage() {
                    </motion.div>
 
               <h2 className="text-2xl font-bold tracking-tight text-[#004065] font-barlow md:text-5xl lg:text-2xl">
-                BLOOMY® COLLECTION
+                {t.home.bloomyTitle}
               </h2>
-
               <p className="max-w-lg text-base leading-relaxed text-[#004065] font-inter md:text-lg">
-                The brand new Bloomy® collection embodies the essence of growth,
-                renewal and the beauty of nature in full bloom.
+                {t.home.bloomyDesc}
               </p>
-
               <button className="px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded">
-                Discover
+                {t.home.discover}
               </button>
             </div>
           </div>
@@ -145,16 +162,13 @@ export default function CollectionsPage() {
               </div>
 
               <h2 className="text-2xl font-bold tracking-tight text-[#004065] font-barlow md:text-5xl lg:text-2xl">
-                VELLUTO COLLECTION
+                {t.home.vellutoTitle}
               </h2>
-
               <p className="max-w-lg text-base leading-relaxed text-[#004065] font-inter md:text-lg">
-                The collection is a celebration of refined beauty, where smooth curves
-                and polished finishes create a sense of effortless grace.
+                {t.home.vellutoDesc}
               </p>
-
               <button className="px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded">
-                Discover
+                {t.home.discover}
               </button>
             </div>
 
@@ -203,16 +217,13 @@ export default function CollectionsPage() {
               />
 
               <h2 className="text-2xl font-bold tracking-tight text-[#004065] font-barlow md:text-5xl lg:text-2xl">
-                VERONA COLLECTION
+                {t.home.veronaTitle}
               </h2>
-
               <p className="max-w-lg text-base leading-relaxed text-[#004065] font-inter md:text-lg">
-                A true celebration of romance, elegance, and timeless beauty,
-                crafted with the utmost care and attention to detail.
+                {t.home.veronaDesc}
               </p>
-
               <button className="px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded">
-                Discover
+                {t.home.discover}
               </button>
             </div>
           </div>
@@ -223,7 +234,7 @@ export default function CollectionsPage() {
       <section className="w-full bg-white py-12 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-12 text-center text-3xl tracking-tight text-[#004065] font-barlow md:text-4xl lg:text-3xl">
-            DISCOVER BY CATEGORY
+            {t.home.discoverByCategory}
           </h2>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

@@ -6,4 +6,3 @@ export default async function ProfilePage() {
   return <Profile settings={settings} />;
 }
 
-// export const revalidate = 60;

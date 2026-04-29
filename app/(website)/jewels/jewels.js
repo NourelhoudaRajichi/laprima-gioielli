@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 export default function CollectionsPage() {
@@ -235,30 +236,28 @@ export default function CollectionsPage() {
 
     return (
       <div className="group flex cursor-pointer flex-col items-center text-center">
-        <div
-          className="mb-4 aspect-square w-full overflow-hidden"
-          onMouseEnter={() =>
-            setHoveredProducts(prev => ({ ...prev, [product.id]: true }))
-          }
-          onMouseLeave={() =>
-            setHoveredProducts(prev => ({ ...prev, [product.id]: false }))
-          }>
+        <Link href={`/detailedPage?id=${product.id}&name=${encodeURIComponent(currentVariation.name || product.name)}&price=${encodeURIComponent(product.price)}&image=${encodeURIComponent(currentVariation.defaultImage)}`}
+          className="mb-4 aspect-square w-full overflow-hidden block"
+          onMouseEnter={() => setHoveredProducts(prev => ({ ...prev, [product.id]: true }))}
+          onMouseLeave={() => setHoveredProducts(prev => ({ ...prev, [product.id]: false }))}>
           <img
             src={displayedImage}
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
-        </div>
+        </Link>
 
-        <h3 className="mb-1 font-barlow text-sm tracking-wide text-[#004065]">
-          {product.name}
-        </h3>
+        <Link href={`/detailedPage?id=${product.id}&name=${encodeURIComponent(currentVariation.name || product.name)}&price=${encodeURIComponent(product.price)}&image=${encodeURIComponent(currentVariation.defaultImage)}`}>
+          <h3 className="mb-1 font-barlow text-sm tracking-wide text-[#004065] hover:text-[#ec9cb2] transition-colors">
+            {product.name}
+          </h3>
+        </Link>
 
         <div className="relative h-6 w-full">
           {currentVariation.isActive ? (
             <>
               <p className="transform font-serif text-[#004065] transition-opacity transition-transform duration-300 group-hover:-translate-y-2 group-hover:opacity-0">
-                € {product.price}
+                {product.price} €
               </p>
               <button className="absolute left-0 top-0 w-full translate-y-2 transform bg-transparent py-0 font-semibold text-[#004065] underline opacity-0 transition-opacity transition-transform duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                 Add to Cart

@@ -2,43 +2,37 @@
 
 import Container from "@/components/container";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import useWeb3Forms from "@web3forms/react";
 import {
   MapPinIcon,
   EnvelopeIcon,
   PhoneIcon
 } from "@heroicons/react/24/outline";
 
-export default function Contact({ settings }) {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitSuccessful, isSubmitting }
-  } = useForm({ mode: "onTouched" });
+export default function Contact() {
+  const [fields, setFields] = useState({ name: "", email: "", message: "" });
+  const [sending, setSending] = useState(false);
+  const [status, setStatus] = useState(null); // null | "success" | "error"
 
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [message, setMessage] = useState(false);
+  const handleChange = (e) => setFields(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const apiKey = settings?.w3ckey || "YOUR_ACCESS_KEY_HERE";
-
-  const { submit: onSubmit } = useWeb3Forms({
-    access_key: apiKey,
-    settings: {
-      from_name: "Stablo Template",
-      subject: "New Contact Message"
-    },
-    onSuccess: (msg) => {
-      setIsSuccess(true);
-      setMessage(msg);
-      reset();
-    },
-    onError: (msg) => {
-      setIsSuccess(false);
-      setMessage(msg);
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setSending(true);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fields),
+      });
+      if (res.ok) { setStatus("success"); setFields({ name: "", email: "", message: "" }); }
+      else setStatus("error");
+    } catch {
+      setStatus("error");
+    } finally {
+      setSending(false);
     }
-  });
+  };
 
   return (
     <Container>
@@ -87,51 +81,55 @@ export default function Contact({ settings }) {
         </div>
 
         {/* RIGHT COLUMN – FORM */}
-        <div className="space-y-6">
-          <input
-            type="checkbox"
-            className="hidden"
-            {...register("botcheck")}
-          />
-
+        <form onSubmit={onSubmit} className="space-y-6">
           <input
             type="text"
+            name="name"
             placeholder="Full Name"
+            required
+            value={fields.name}
+            onChange={handleChange}
             className="w-full rounded-md border-2 border-gray-300 px-4 py-3 outline-none focus:border-gray-600"
-            {...register("name", { required: true })}
           />
 
           <input
             type="email"
+            name="email"
             placeholder="Email Address"
+            required
+            value={fields.email}
+            onChange={handleChange}
             className="w-full rounded-md border-2 border-gray-300 px-4 py-3 outline-none focus:border-gray-600"
-            {...register("email", { required: true })}
           />
 
           <textarea
+            name="message"
             placeholder="Your Message"
+            required
+            value={fields.message}
+            onChange={handleChange}
             className="h-36 w-full rounded-md border-2 border-gray-300 px-4 py-3 outline-none focus:border-gray-600"
-            {...register("message", { required: true })}
           />
 
           <button
-            type="button"
-            onClick={handleSubmit(onSubmit)}
-            className="w-full rounded-md bg-[#004065] py-4 font-semibold text-white hover:text-[#004065] hover:bg-[#f8e3e8]"
+            type="submit"
+            disabled={sending}
+            className="w-full rounded-md bg-[#004065] py-4 font-semibold text-white hover:text-[#004065] hover:bg-[#f8e3e8] disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Sending..." : "Send Message"}
+            {sending ? "Sending…" : "Send Message"}
           </button>
 
-          {isSubmitSuccessful && (
-            <p
-              className={`text-center text-sm ${
-                isSuccess ? "text-green-500" : "text-red-500"
-              }`}
-            >
-              {message}
+          {status === "success" && (
+            <p className="text-center text-sm text-green-600">
+              Message sent! We'll get back to you soon.
             </p>
           )}
-        </div>
+          {status === "error" && (
+            <p className="text-center text-sm text-red-500">
+              Something went wrong. Please try again or email us directly.
+            </p>
+          )}
+        </form>
       </div>
       
       {/* CONTACT INFO CARDS - Bottom Section */}

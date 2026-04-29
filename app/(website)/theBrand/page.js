@@ -7,4 +7,3 @@ export default async function AboutPage() {
   return <Brand settings={settings} authors={authors} />;
 }
 
-// export const revalidate = 60;

@@ -6,4 +6,3 @@ export default async function JewelsCarePage() {
   return <Jewels settings={settings} />;
 }
 
-// export const revalidate = 60;

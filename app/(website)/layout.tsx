@@ -3,6 +3,7 @@ import Footer from "@/components/footer";
 import { urlForImage } from "@/lib/sanity/image";
 import Navbar from "@/components/navbar";
 import Providers from "@/components/providers";
+import TrackPageView from "@/components/TrackPageView";
 
 async function sharedMetaData(params) {
   const settings = await getSettings();
@@ -48,6 +49,7 @@ export default async function Layout({ children, params }) {
   const settings = await getSettings();
   return (
     <Providers>
+      <TrackPageView />
       <Navbar {...settings} />
       <div>{children}</div>
       <Footer {...settings} />

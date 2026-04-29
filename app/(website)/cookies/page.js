@@ -6,4 +6,3 @@ export default async function CookiesPage() {
   return <Cookies settings={settings} />;
 }
 
-// export const revalidate = 60;

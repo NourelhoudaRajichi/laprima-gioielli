@@ -52,18 +52,7 @@ const STORES = [
 
 // ─── Marker ───────────────────────────────────────────────────────────────────
 
-function markerHTML(active) {
-  const col = "#004065";
-  const sz  = active ? 40 : 28;
-  const r   = sz / 2;
-  return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${sz+16}" height="${sz+20}" viewBox="0 0 ${sz+16} ${sz+20}">
-      <circle cx="${r+8}" cy="${r+8}" r="${r+5}" fill="${col}" opacity="${active ? .18 : .08}"/>
-      <circle cx="${r+8}" cy="${r+8}" r="${r-1}" fill="${active ? col : "#fff"}" stroke="${col}" stroke-width="${active ? 0 : 1.8}"/>
-      <circle cx="${r+8}" cy="${r+8}" r="${(r-1)*.38}" fill="${active ? "#fff" : col}"/>
-      <polygon points="${r+8},${sz+4} ${r+3},${sz-2} ${r+13},${sz-2}" fill="${col}"/>
-    </svg>`;
-}
+const MARKER_IMG = "https://laprimagioielli.com/wp-content/uploads/2025/12/4-1.png";
 
 // ─── MapPane ──────────────────────────────────────────────────────────────────
 
@@ -98,13 +87,12 @@ function MapPaneInner({ stores, selectedId, onSelect, flyTarget, onFlyDone }) {
     markersRef.current = {};
     stores.forEach((store) => {
       const active = store.id === selectedId;
-      const sz     = active ? 56 : 44;
-      const icon   = L.divIcon({
-        html: markerHTML(active),
-        className: "",
-        iconSize:    [sz, sz + 8],
-        iconAnchor:  [sz / 2, sz + 8],
-        popupAnchor: [0, -(sz + 8)],
+      const sz     = active ? 72 : 56;
+      const icon   = L.icon({
+        iconUrl:     MARKER_IMG,
+        iconSize:    [sz, sz],
+        iconAnchor:  [sz / 2, sz],
+        popupAnchor: [0, -sz],
       });
       const marker = L.marker([store.lat, store.lng], { icon })
         .addTo(map)

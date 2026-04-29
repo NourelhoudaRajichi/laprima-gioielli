@@ -88,9 +88,9 @@ body {
 }
 
 .panel-edge {
-  position: absolute; right: 0; top: 0; bottom: 0; width: 60px;
+  position: absolute; right: 0; top: 0; bottom: 0; width: 220px;
   z-index: 11;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.10));
+  background: linear-gradient(to right, transparent, rgba(255,255,255,1));
   pointer-events: none;
 }
 
@@ -409,10 +409,11 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
 
-/* ── Responsive ── */
+/* ── Responsive tablet (≤ 880px) ── */
 @media (max-width: 880px) {
   .left-panel           { display: none; }
-  .right-panel          { margin-left: 0; width: 100%; }
+  .layout::before       { width: 0; display: none; }
+  .right-panel          { margin-left: 0; width: 100%; flex: 0 0 100%; }
   .video-hero__title    { font-size: 64px; }
   .video-hero__content  { padding: 0 36px 64px; }
   .decade-header        { padding: 48px 40px 28px; }
@@ -420,6 +421,42 @@ body {
   .content-col          { padding: 52px 40px; }
   .event-title          { font-size: 36px; }
   .watermark            { font-size: 130px; }
+}
+
+/* ── Mobile event image (hidden on desktop, shown on tablet/phone) ── */
+.event-mobile-image {
+  display: none;
+}
+
+@media (max-width: 880px) {
+  .event-mobile-image {
+    display: block;
+    width: 100%;
+    height: 340px;
+    background-size: cover;
+    background-position: center top;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Responsive phone (≤ 640px) ── */
+@media (max-width: 640px) {
+  :root { --nav-height: 56px; }
+  .video-hero__title    { font-size: 48px; }
+  .video-hero__title em { font-size: 0.9em; }
+  .video-hero__content  { padding: 0 20px 44px; }
+  .video-hero__scroll   { right: 20px; bottom: 36px; }
+  .decade-header        { padding: 32px 20px 16px; }
+  .event-row            { grid-template-columns: 40px 1fr; min-height: 180px; }
+  .year-col             { padding-top: 36px; }
+  .content-col          { padding: 32px 18px 36px; }
+  .event-mobile-image   { height: 260px; }
+  .event-title          { font-size: 26px; }
+  .event-text           { font-size: 12px; line-height: 1.85; }
+  .watermark            { font-size: 72px; }
+  .event-ornament       { margin-top: 20px; }
+  .decade-section       { overflow: hidden; }
 }
 
 .packaging-section {

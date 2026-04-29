@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Heart,
   ChevronRight,
@@ -14,8 +16,36 @@ import {
   Copy
 } from "lucide-react";
 import { useCart } from "../../../components/Context";
+import { formatPrice } from "@/lib/formatPrice";
+import { useCurrency } from "@/components/CurrencyContext";
+
+/* ── parse WC attributes into Diamonds / Gold / Size groups ── */
+function parseAttrs(attributes = []) {
+  const diamondKeys = ["weight", "purity", "color", "cut", "carats", "carat"];
+  const goldKeys    = ["gold", "metal", "finish", "karat", "kt", "type"];
+  const sizeKeys    = ["size", "length", "width", "dimension", "height", "internal", "external"];
+  const diamonds = [], gold = [], size = [], other = [];
+  for (const attr of attributes) {
+    const key = (attr.name || "").toLowerCase();
+    const val = Array.isArray(attr.options) ? attr.options.join(", ") : String(attr.options || "");
+    if (!val) continue;
+    const entry = { name: attr.name, value: val };
+    if (diamondKeys.some(k => key.includes(k)))      diamonds.push(entry);
+    else if (goldKeys.some(k => key.includes(k)))    gold.push(entry);
+    else if (sizeKeys.some(k => key.includes(k)))    size.push(entry);
+    else                                              other.push(entry);
+  }
+  return { diamonds, gold, size, other };
+}
 
 const ProductPage = () => {
+  const searchParams  = useSearchParams();
+  const productId     = searchParams.get("id");
+  const paramName     = searchParams.get("name") ?? "";
+  const paramPrice    = searchParams.get("price") ?? "";
+  const paramImage    = searchParams.get("image") ?? "";
+
+  const [wcProduct, setWcProduct] = useState(null);
   const [currentUrl, setCurrentUrl] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -28,106 +58,65 @@ const ProductPage = () => {
   const [hoveredProducts, setHoveredProducts] = useState({});
   const [addedFeedback, setAddedFeedback] = useState({});
   const [mainAdded, setMainAdded] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
+  const { format } = useCurrency();
 
-  const imageRefs = useRef([]);
+  const imageRefs   = useRef([]);
   const containerRef = useRef(null);
 
-  const mainProduct = {
-    id: "verona-earrings-3diamonds",
-    name: "Verona Earrings with 3 Diamonds",
-    price: "2,450.00",
-    variations: [
-      {
-        name: "Rose Gold",
-        defaultImage:
-          "https://laprimagioielli.com/wp-content/uploads/2024/07/earrings_gold_diamonds_la_prima_gioielli.2169.jpg",
-        isActive: true
-      }
-    ]
-  };
+  /* fetch real product from WooCommerce */
+  useEffect(() => {
+    if (!productId) return;
+    fetch(`/api/woo/product/${productId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        setWcProduct(data);
+        if (!data) return;
+        fetch(`/api/woo/related?id=${productId}`)
+          .then(r => r.ok ? r.json() : [])
+          .then(items => {
+            setRelatedProducts((Array.isArray(items) ? items : []).map(p => ({
+              id: p.id,
+              name: (p.name || "").toUpperCase(),
+              price: p.price ? formatPrice(p.price) : "—",
+              image: p.images?.[0]?.src ?? "",
+              hoverImage: p.images?.[1]?.src ?? p.images?.[0]?.src ?? "",
+              variations: [{ name: p.name, defaultImage: p.images?.[0]?.src ?? "", hoverImage: p.images?.[1]?.src ?? "", isActive: true }],
+            })));
+          })
+          .catch(() => {});
+      })
+      .catch(() => {});
+  }, [productId]);
+
+  /* ── derive display values from WC data (fall back to placeholder if not loaded) ── */
+  const wcImages     = wcProduct ? (wcProduct.images ?? []).map(i => i.src) : (paramImage ? [paramImage] : []);
+  const wcName       = wcProduct?.name ?? paramName;
+  const wcPrice      = wcProduct?.price
+    ? format(wcProduct.price)
+    : (paramPrice ? format(paramPrice) : "");
+  const wcSku        = wcProduct?.sku ?? "";
+  const wcInStock    = wcProduct ? wcProduct.stock_status === "instock" : true;
+  const wcAttrs      = wcProduct ? parseAttrs(wcProduct.attributes ?? []) : { diamonds: [], gold: [], size: [], other: [] };
+  const wcCategories = wcProduct?.categories ?? [];
+  const collectionNames = ["bloomy", "verona", "velluto", "prestige"];
+  const breadcrumbCat = wcCategories.find(c =>
+    !collectionNames.includes(c.slug?.toLowerCase()) &&
+    !collectionNames.includes(c.name?.toLowerCase())
+  ) ?? wcCategories[0];
+
+  const mainProduct = wcProduct
+    ? { id: wcProduct.id, name: wcName, price: wcProduct.price, variations: [{ name: wcName, defaultImage: wcImages[0] ?? "", isActive: true }] }
+    : { id: "", name: "", price: "", variations: [{ name: "", defaultImage: "", isActive: true }] };
 
   const mainVariation = mainProduct.variations[0];
   const liked = isInWishlist(mainProduct.id, mainVariation.name);
 
-  const images = [
-    "https://laprimagioielli.com/wp-content/uploads/2024/07/earrings_gold_diamonds_la_prima_gioielli.2169.jpg",
-    "https://laprimagioielli.com/wp-content/uploads/2024/07/LA_PRIMA_GIOIELLI_verona_earrings_model.jpg"
-  ];
+  const images = wcImages.length ? wcImages : [];
 
-  const products = [
-    {
-      id: 1,
-      name: "BLOOMY BANGLE WITH DIAMOND",
-      price: "3,670.00",
-      category: "bangles",
-      type: "Bloomy",
-      stone: "diamond",
-      variations: [
-        {
-          name: "Yellow Gold",
-          defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.150.jpg",
-          hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.152.jpg",
-          isActive: true
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: "BLOOMY BANGLE MOTHER OF PEARL",
-      price: "3,210.00",
-      category: "bangles",
-      type: "Bloomy",
-      stone: "MOTHER OF PEARL",
-      variations: [
-        {
-          name: "Yellow Gold",
-          defaultImage: "/renders/bloomy%20ecommerce.413.jpg",
-          hoverImage: "/renders/bloomy%20ecommerce.414.jpg",
-          isActive: false
-        },
-        {
-          name: "Rose Gold",
-          defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.189.jpg",
-          hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.187.jpg",
-          isActive: true
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: "VELLUTO BANGLE WITH DIAMONDS",
-      price: "6,190.00",
-      category: "Bangles",
-      type: "Velluto",
-      stone: "diamond",
-      variations: [
-        {
-          name: "Yellow Gold",
-          defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/07/Velluto_Bangle_yellow_gold.jpg",
-          hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/07/Velluto_Bangle_yellow_gold_diamonds.jpg",
-          isActive: true
-        }
-      ]
-    },
-    {
-      id: 4,
-      name: "BLOOMY WITH LAPIS AND DIAMONDS",
-      price: "6,710.00",
-      category: "Bangles",
-      type: "Verona",
-      stone: "diamond",
-      variations: [
-        {
-          name: "Rose Gold",
-          defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/07/bangle_diamonds_rose_gold_verona_la_prima_gioielli.1785.jpg",
-          hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/07/bangle_diamonds_rose_gold_verona_la_prima_gioielli.1791.jpg",
-          isActive: true
-        }
-      ]
-    }
-  ];
+  const products = relatedProducts;
 
   const handleMainAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -214,7 +203,7 @@ const ProductPage = () => {
                     onClick={() => setFullscreenImage(idx)}>
                     <img
                       src={img}
-                      alt={`Verona Earrings ${idx + 1}`}
+                      alt={`${wcName} ${idx + 1}`}
                       className="h-full w-full object-cover transition-transform duration-300"
                       style={
                         zoomedImageIndex === idx
@@ -247,15 +236,14 @@ const ProductPage = () => {
               <nav className="flex items-center text-sm font-bold text-[#004065]">
                 <a href="#" className="hover:underline">Home</a>
                 <ChevronRight className="mx-2 h-4 w-4" />
-                <span className="font-bold text-[#004065]">Earrings</span>
+                <span className="font-bold text-[#004065]">{breadcrumbCat?.name ?? ""}</span>
               </nav>
 
               <h1 className="font-barlow text-3xl font-bold uppercase text-[#004065]">
-                Verona Earrings with 3 Diamonds
+                {wcName}
               </h1>
 
-              <p className="font-barlow text-[#004065]">Verona earrings in 18KT Rose Gold with 3 diamonds</p>
-              <div className="text-1xl font-inter text-gray-900">2.450,00 €</div>
+              <div className="text-1xl font-inter text-gray-900">{wcPrice}</div>
               <p className="font-inter text-sm text-gray-500">Delivery expected in 2–5 working days</p>
 
               {/* Product Details */}
@@ -263,22 +251,44 @@ const ProductPage = () => {
                 <h3 className="font-barlow text-[#004065]">Product details</h3>
                 {isExpanded && (
                   <>
-                    <div className="font-inter space-y-2 font-barlow text-sm text-[#004065]">
-                      <p className="font-semibold text-[#004065]">Diamonds</p>
-                      <p>– Weight: 0.102 CT</p>
-                      <p>– Purity: VS</p>
-                      <p>– Color: G</p>
-                      <p>– Cut: round brilliant</p>
-                    </div>
-                    <div className="space-y-1 font-barlow text-sm text-[#004065]">
-                      <p className="font-semibold">Gold</p>
-                      <p>18KT Rose polished</p>
-                    </div>
-                    <div className="space-y-1 font-barlow text-sm text-[#004065]">
-                      <p className="font-semibold">Size</p>
-                      <p>18.5 × 14 mm</p>
-                    </div>
-                    <p className="font-barlow text-sm italic text-[#004065]">Being handmade, slight variations may occur.</p>
+                    {/* Use WC attributes if available, otherwise fall back to short_description HTML */}
+                    {(wcAttrs.diamonds.length > 0 || wcAttrs.gold.length > 0 || wcAttrs.size.length > 0 || wcAttrs.other.length > 0) ? (
+                      <>
+                        {wcAttrs.diamonds.length > 0 && (
+                          <div className="font-inter space-y-2 font-barlow text-sm text-[#004065]">
+                            <p className="font-semibold text-[#004065]">Diamonds</p>
+                            {wcAttrs.diamonds.map(a => (
+                              <p key={a.name}>– {a.name}: {a.value}</p>
+                            ))}
+                          </div>
+                        )}
+                        {wcAttrs.gold.length > 0 && (
+                          <div className="space-y-1 font-barlow text-sm text-[#004065]">
+                            <p className="font-semibold">Gold</p>
+                            {wcAttrs.gold.map(a => <p key={a.name}>{a.value}</p>)}
+                          </div>
+                        )}
+                        {wcAttrs.size.length > 0 && (
+                          <div className="space-y-1 font-barlow text-sm text-[#004065]">
+                            <p className="font-semibold">Size</p>
+                            {wcAttrs.size.map(a => <p key={a.name}>{a.value}</p>)}
+                          </div>
+                        )}
+                        {wcAttrs.other.length > 0 && (
+                          <div className="space-y-1 font-barlow text-sm text-[#004065]">
+                            {wcAttrs.other.map(a => <p key={a.name}>– {a.name}: {a.value}</p>)}
+                          </div>
+                        )}
+                        <p className="font-barlow text-sm italic text-[#004065]">Being handmade, slight variations may occur.</p>
+                      </>
+                    ) : wcProduct?.short_description ? (
+                      <div
+                        className="font-barlow text-sm text-[#004065] space-y-1"
+                        dangerouslySetInnerHTML={{
+                          __html: wcProduct.short_description.replace(/product\s*details/gi, "").trim()
+                        }}
+                      />
+                    ) : null}
                   </>
                 )}
                 <button onClick={() => setIsExpanded(!isExpanded)} className="text-sm font-medium text-gray-500 hover:underline">
@@ -291,7 +301,7 @@ const ProductPage = () => {
                 <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-gray-500">
                   <Check className="h-3 w-3 text-gray-500" />
                 </div>
-                <span className="font-barlow font-medium">IN STOCK</span>
+                <span className="font-barlow font-medium">{wcInStock ? "IN STOCK" : "OUT OF STOCK"}</span>
               </div>
 
               {/* Quantity & Cart */}
@@ -319,7 +329,7 @@ const ProductPage = () => {
                   {mainAdded ? "ADDED ✓" : "ADD TO CART"}
                 </button>
 
-                {/* ✅ Wishlist button — toggles & syncs with context */}
+                {/* Wishlist button */}
                 <button
                   onClick={handleToggleWishlist}
                   className="group relative flex items-center gap-2 text-sm font-medium text-[#004065]">
@@ -335,7 +345,7 @@ const ProductPage = () => {
                 </button>
               </div>
 
-              <p className="text-sm text-gray-500">SKU: VRN0009EAFUPE00DAU750_R</p>
+              {wcSku && <p className="text-sm text-gray-500">SKU: {wcSku}</p>}
 
               {/* Share */}
               <div className="flex items-center gap-3 border-t pt-4">
@@ -370,7 +380,7 @@ const ProductPage = () => {
             </button>
             <img
               src={images[fullscreenImage]}
-              alt={`Verona Earrings ${fullscreenImage + 1}`}
+              alt={`${wcName} ${fullscreenImage + 1}`}
               className="max-h-[90vh] max-w-[90vw] object-contain"
               onClick={e => e.stopPropagation()}
             />
@@ -411,18 +421,20 @@ const ProductPage = () => {
 
           return (
             <div key={product.id} className="group flex cursor-pointer flex-col items-center text-center">
-              <div
-                className="mb-4 aspect-square w-full overflow-hidden"
+              <Link href={`/detailedPage?id=${product.id}&name=${encodeURIComponent(currentVariation.name || product.name)}&price=${encodeURIComponent(product.price)}&image=${encodeURIComponent(currentVariation.defaultImage)}`}
+                className="mb-4 aspect-square w-full overflow-hidden block"
                 onMouseEnter={() => setHoveredProducts(prev => ({ ...prev, [product.id]: true }))}
                 onMouseLeave={() => setHoveredProducts(prev => ({ ...prev, [product.id]: false }))}>
                 <img src={displayedImage} alt={product.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-              </div>
-              <h3 className="mb-1 font-barlow text-sm tracking-wide text-[#004065]">{product.name}</h3>
+              </Link>
+              <Link href={`/detailedPage?id=${product.id}&name=${encodeURIComponent(currentVariation.name || product.name)}&price=${encodeURIComponent(product.price)}&image=${encodeURIComponent(currentVariation.defaultImage)}`}>
+                <h3 className="mb-1 font-barlow text-sm tracking-wide text-[#004065] hover:text-[#ec9cb2] transition-colors">{product.name}</h3>
+              </Link>
               <div className="relative h-6 w-full">
                 {currentVariation.isActive ? (
                   <>
                     <p className="transform font-serif text-[#004065] transition-opacity transition-transform duration-300 group-hover:-translate-y-2 group-hover:opacity-0">
-                      € {product.price}
+                      {format(product.price)}
                     </p>
                     <button
                       onClick={() => handleRelatedAddToCart(product, currentVariation)}
@@ -435,16 +447,6 @@ const ProductPage = () => {
                 ) : (
                   <p className="font-barlow font-serif text-[10px] text-[#ec9cb2]">AVAILABLE IN YOUR NEAREST STORE</p>
                 )}
-              </div>
-              <div className="mt-2 flex gap-2">
-                {product.variations.map(v => (
-                  <button
-                    key={v.name}
-                    className={`squared-full h-6 w-6 border ${currentVariation.name === v.name ? "ring-2 ring-[#004065]" : ""}`}
-                    style={{ backgroundImage: `url(${v.defaultImage})`, backgroundSize: "cover", backgroundPosition: "center" }}
-                    onClick={() => setSelectedVariations(prev => ({ ...prev, [product.id]: v }))}
-                  />
-                ))}
               </div>
             </div>
           );

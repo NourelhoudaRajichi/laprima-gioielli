@@ -6,4 +6,3 @@ export default async function NewsDetailsPage() {
   return <NewsDetails settings={settings} />;
 }
 
-// export const revalidate = 60;

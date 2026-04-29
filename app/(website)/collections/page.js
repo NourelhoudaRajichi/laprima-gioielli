@@ -1,9 +1,9 @@
-import { getSettings } from "@/lib/sanity/client";
+import { getCollections } from "@/lib/wordpress/api";
 import Collections from "./collections";
 
-export default async function CollectionsPage() {
-  const settings = await getSettings();
-  return <Collections settings={settings} />;
-}
+export const revalidate = 60;
 
-// export const revalidate = 60;
+export default async function CollectionsPage() {
+  const collections = await getCollections(20).catch(() => null);
+  return <Collections collections={collections ?? null} />;
+}

@@ -1,7 +1,12 @@
 "use client";
 
 import { CartProvider } from "./Context";
+import { CurrencyProvider } from "./CurrencyContext";
 
 export default function Providers({ children }) {
-  return <CartProvider>{children}</CartProvider>;
+  return (
+    <CurrencyProvider>
+      <CartProvider>{children}</CartProvider>
+    </CurrencyProvider>
+  );
 }

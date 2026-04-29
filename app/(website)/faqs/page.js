@@ -7,4 +7,3 @@ export default async function FaqsPage() {
   return <Faqs settings={settings} authors={authors} />;
 }
 
-// export const revalidate = 60;

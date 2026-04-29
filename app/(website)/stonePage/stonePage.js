@@ -4,10 +4,14 @@ import { React, useRef, useState } from "react";
 import { Heart } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { useCart } from "../../../components/Context";
+import { formatPrice } from "@/lib/formatPrice";
+import { useCurrency } from "@/components/CurrencyContext";
 
 export default function CollectionsPage() {
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
+  const { format } = useCurrency();
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [hoveredProducts, setHoveredProducts] = useState({});
@@ -190,8 +194,8 @@ export default function CollectionsPage() {
 
                 return (
                   <div key={product.id} className="group flex cursor-pointer flex-col items-center text-center">
-                    <div
-                      className="mb-4 aspect-square w-full overflow-hidden"
+                    <Link href={`/detailedPage?id=${product.id}&name=${encodeURIComponent(product.name)}&price=${encodeURIComponent(product.price)}&image=${encodeURIComponent(displayedImage)}`}
+                      className="mb-4 aspect-square w-full overflow-hidden block"
                       onMouseEnter={() => setHoveredProducts(prev => ({ ...prev, [product.id]: true }))}
                       onMouseLeave={() => setHoveredProducts(prev => ({ ...prev, [product.id]: false }))}>
                       <img
@@ -199,15 +203,17 @@ export default function CollectionsPage() {
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
-                    </div>
+                    </Link>
 
-                    <h3 className="mb-1 font-barlow text-sm tracking-wide text-[#004065]">{product.name}</h3>
+                    <Link href={`/detailedPage?id=${product.id}&name=${encodeURIComponent(product.name)}&price=${encodeURIComponent(product.price)}&image=${encodeURIComponent(displayedImage)}`}>
+                      <h3 className="mb-1 font-barlow text-sm tracking-wide text-[#004065] hover:text-[#ec9cb2] transition-colors">{product.name}</h3>
+                    </Link>
 
                     <div className="relative h-6 w-full">
                       {currentVariation.isActive ? (
                         <>
                           <p className="transform font-serif text-[#004065] transition-opacity transition-transform duration-300 group-hover:-translate-y-2 group-hover:opacity-0">
-                            € {product.price}
+                            {format(product.price)}
                           </p>
                           <div className="absolute left-0 top-0 flex w-full translate-y-2 transform items-center justify-center gap-3 opacity-0 transition-opacity transition-transform duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                             <button

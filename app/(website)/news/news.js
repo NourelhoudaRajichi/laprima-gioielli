@@ -117,9 +117,7 @@ const newsData = [
   },
 ];
 
-function NewsCard({ item }) {
-  const [expanded, setExpanded] = useState(false);
-
+function NewsCard({ item, expanded, onToggle }) {
   return (
     <article className="flex flex-col bg-white h-full" style={{ color: "#004065" }}>
       {/* Cover image — one per card */}
@@ -208,7 +206,7 @@ function NewsCard({ item }) {
               style={{ background: "rgba(0,64,101,0.15)" }}
             />
             <button
-              onClick={() => setExpanded((v) => !v)}
+              onClick={onToggle}
               className="relative z-10 bg-white px-2 flex items-center justify-center transition-colors duration-200"
               style={{ color: expanded ? "#ec9cb2" : "rgba(0,64,101,0.4)" }}
               aria-label={expanded ? "Collapse" : "Read more"}
@@ -245,6 +243,8 @@ function NewsCard({ item }) {
 }
 
 function NewsPair({ pair }) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <div
       className="flex flex-col md:flex-row"
@@ -252,7 +252,7 @@ function NewsPair({ pair }) {
     >
       {pair.map((item) => (
         <div key={item.id} className="flex-1 min-w-0">
-          <NewsCard item={item} />
+          <NewsCard item={item} expanded={expanded} onToggle={() => setExpanded((v) => !v)} />
         </div>
       ))}
       {pair.length === 1 && <div className="flex-1 bg-white" />}
@@ -260,14 +260,66 @@ function NewsPair({ pair }) {
   );
 }
 
+// Transform a WordPress REST API post into the shape NewsCard expects
+function transformWpPost(post) {
+  const d = new Date(post.date);
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  // Preserve line breaks from <br>, then strip all other tags
+  const stripHtml = (html) =>
+    (html || "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<[^>]*>/g, "")
+      .replace(/\u00a0/g, " ")
+      .trim();
+
+  const rawTitle   = post.title?.rendered   ?? post.title   ?? "";
+  const rawContent = post.content?.rendered ?? post.content ?? "";
+
+  // Featured image: embedded → Yoast thumbnail → OG image → GraphQL
+  const featuredImage =
+    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url
+    ?? post.yoast_head_json?.thumbnailUrl
+    ?? post.yoast_head_json?.og_image?.[0]?.url
+    ?? post.featuredImage?.node?.sourceUrl
+    ?? "";
+
+  // Extract only <p> tag content — ignores nav, h1, button wrappers (all Elementor junk)
+  const paragraphMatches = rawContent.match(/<p[^>]*>([\s\S]*?)<\/p>/gi) ?? [];
+  const contentParagraphs = paragraphMatches
+    .map(stripHtml)
+    .filter((s) => s.trim().length > 20);
+
+  // Build excerpt from first content paragraph — not WP auto-excerpt (appends "Read more…")
+  const firstPara = contentParagraphs[0] ?? "";
+  const excerpt =
+    firstPara.length > 200
+      ? firstPara.slice(0, 200).trimEnd() + "…"
+      : firstPara;
+
+  return {
+    id: post.id ?? post.databaseId,
+    date: String(d.getDate()).padStart(2, "0"),
+    month: months[d.getMonth()],
+    year: String(d.getFullYear()),
+    image: featuredImage,
+    title: stripHtml(rawTitle),
+    excerpt,
+    full: contentParagraphs,
+  };
+}
+
 const INITIAL_PAIRS = 2;
 
-export default function HappeningsPage() {
+export default function HappeningsPage({ posts }) {
   const [visiblePairs, setVisiblePairs] = useState(INITIAL_PAIRS);
 
+  // Use WordPress data if available, otherwise fall back to hardcoded
+  const data = posts ? posts.map(transformWpPost) : newsData;
+
   const allPairs = [];
-  for (let i = 0; i < newsData.length; i += 2) {
-    allPairs.push(newsData.slice(i, i + 2));
+  for (let i = 0; i < data.length; i += 2) {
+    allPairs.push(data.slice(i, i + 2));
   }
 
   const shownPairs = allPairs.slice(0, visiblePairs);
@@ -311,7 +363,7 @@ export default function HappeningsPage() {
           className="font-inter text-[11px] mt-5 tracking-widest"
           style={{ color: "#004065", opacity: 0.3 }}
         >
-          {Math.min(visiblePairs * 2, newsData.length)} / {newsData.length}
+          {Math.min(visiblePairs * 2, data.length)} / {data.length}
         </p>
       </div>
     </main>

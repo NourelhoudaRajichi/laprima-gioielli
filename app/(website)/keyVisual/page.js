@@ -6,4 +6,3 @@ export default async function KeyPage() {
   return <Key settings={settings} />;
 }
 
-// export const revalidate = 60;

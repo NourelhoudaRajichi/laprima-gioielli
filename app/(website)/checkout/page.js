@@ -7,4 +7,3 @@ export default async function CheckoutPage() {
   return <Checkout settings={settings} authors={authors} />;
 }
 
-// export const revalidate = 60;

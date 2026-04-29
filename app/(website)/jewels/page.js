@@ -7,4 +7,3 @@ export default async function JewelsPage() {
   return <Jewels settings={settings} authors={authors} />;
 }
 
-// export const revalidate = 60;

@@ -85,7 +85,6 @@ const allEvents = decades.flatMap((d) =>
 );
 
 const HERO_VIDEO_URL = "/Videos/girl.mp4";
-const HERO_POSTER    = "https://laprimagioielli.com/wp-content/uploads/2025/10/LaPrimaGioielli_SS26_0131_VERONA-scaled-e1760609519877.jpg";
 const INK_VIDEO_URL  = "/Videos/hand.mp4";
 
 /* ─────────────────────────────────────────────────────────────
@@ -101,6 +100,14 @@ function NewspaperHero({ onPinkProgress }) {
   const naturalVbox = useRef(null);
   const hintRef     = useRef(null);
   const lastP       = useRef(-1);
+  const [isMobile,  setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     const pinkVid = pinkVidRef.current;
@@ -201,23 +208,26 @@ function NewspaperHero({ onPinkProgress }) {
         return;
       }
 
+      // p 0.62–0.72: pink video holds; layout starts fading in early
       if (p <= 0.72) {
+        const tEarly = clamp((p - 0.62) / 0.10, 0, 1);
         wrap.style.opacity        = "0";
         full.style.opacity        = "0";
         full.style.pointerEvents  = "none";
         pinkW.style.opacity       = "1";
         pinkW.style.pointerEvents = "auto";
-        if (onPinkProgress) onPinkProgress(0);
+        if (onPinkProgress) onPinkProgress(tEarly);
         return;
       }
 
+      // p > 0.72: pink video fades out, layout fully in
       const t4 = clamp((p - 0.72) / 0.28, 0, 1);
       wrap.style.opacity        = "0";
       full.style.opacity        = "0";
       full.style.pointerEvents  = "none";
       pinkW.style.opacity       = `${1 - t4}`;
       pinkW.style.pointerEvents = t4 > 0.95 ? "none" : "auto";
-      if (onPinkProgress) onPinkProgress(t4);
+      if (onPinkProgress) onPinkProgress(1);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -238,144 +248,168 @@ function NewspaperHero({ onPinkProgress }) {
   const bodyTxt = { fontFamily:"'IM Fell English',serif", fontWeight:400, fontSize:"clamp(8px,0.92vw,10px)", color:INK, lineHeight:1.70, textAlign:"justify" };
   const orn     = { textAlign:"center", color:INK_DIM, fontSize:11, margin:"7px 0", letterSpacing:"0.3em" };
 
+  /* ── Single return — overlay refs always mounted, newspaper content switches ── */
   return (
     <div ref={stageRef} data-hero style={{ position:"relative", height:"1200vh" }}>
-      <div style={{
-        position:       "sticky",
-        top:            "var(--nav-height)",
-        height:         "calc(100vh - var(--nav-height))",
-        background:     "transparent",
-        display:        "flex",
-        alignItems:     "center",
-        justifyContent: "center",
-        overflow:       "hidden",
-         zIndex:         3,  
-      }}>
+      <div style={{ position:"sticky", top:"var(--nav-height)", height:"calc(100vh - var(--nav-height))",
+        display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", zIndex:3 }}>
 
-        <div ref={wrapRef} style={{ width:"min(1160px,96vw)", position:"relative", zIndex:10, willChange:"transform,opacity", transform:"rotate(-3deg)", transformOrigin:"center center" }}>
-          <div style={{ background:`url('/img/paper1.jpg') center center / cover no-repeat`, border:"1px solid rgba(0,0,0,0.20)", boxShadow:"1px 2px 4px rgba(0,0,0,0.06),6px 14px 40px rgba(0,0,0,0.18),0 30px 70px rgba(0,0,0,0.10)", position:"relative" }}>
-            <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:25, opacity:0.28, backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")` }} />
-            <div style={{ position:"absolute", left:"50%", top:0, bottom:0, width:1, background:"linear-gradient(to bottom,transparent 4%,rgba(0,0,0,0.07) 18%,rgba(0,0,0,0.07) 82%,transparent 96%)", pointerEvents:"none", zIndex:24 }} />
-
-            <div style={{ borderBottom:"3px double rgba(0,0,0,0.35)", padding:"12px 28px 10px", textAlign:"center" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"'IM Fell English',serif", fontWeight:400, fontStyle:"italic", fontSize:"clamp(7px,0.82vw,9px)", color:INK_MID, letterSpacing:"0.16em", textTransform:"uppercase", borderBottom:`1px solid ${RULE}`, paddingBottom:5, marginBottom:7 }}>
-                <span>Vol. CCCXXI · No. 47</span><span>Est. 15th Century</span><span>Commemorative Edition</span>
+        {/* ── Newspaper wrapper (mobile or desktop content) ── */}
+        <div ref={wrapRef} style={{
+          width: isMobile ? "94vw" : "min(1160px,96vw)",
+          position:"relative", zIndex:10,
+          willChange:"transform,opacity", transform:"rotate(-3deg)", transformOrigin:"center center",
+        }}>
+          {isMobile ? (
+            /* ── MOBILE: single-column newspaper ── */
+            <div style={{ background:"url('/img/paper1.jpg') center center / cover no-repeat",
+              border:"1px solid rgba(0,0,0,0.20)", boxShadow:"1px 2px 4px rgba(0,0,0,0.06),6px 14px 40px rgba(0,0,0,0.18)", position:"relative" }}>
+              <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:25, opacity:0.28,
+                backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")` }}/>
+              <div style={{ borderBottom:"3px double rgba(0,0,0,0.35)", padding:"10px 14px 8px", textAlign:"center" }}>
+                <div style={{ fontFamily:"'UnifrakturMaguntia',cursive", fontSize:"clamp(1.6rem,8vw,2.4rem)", color:"#ec9cb2", lineHeight:1 }}>Women and Pink</div>
+                <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(8px,2.4vw,10px)", color:INK_MID, letterSpacing:"0.10em", marginTop:4 }}>A History Since the 15th Century · La Prima Gioielli</div>
+                <div style={{ height:1, background:`linear-gradient(to right,transparent,${RULE},transparent)`, marginTop:5 }}/>
               </div>
-              <div style={{ fontFamily:"'UnifrakturMaguntia',cursive", fontSize:"clamp(2rem,5.8vw,4.2rem)", color:"#ec9cb2", lineHeight:1 }}>Women and Pink</div>
-              <div style={{ fontFamily:"'IM Fell English',serif", fontWeight:400, fontStyle:"italic", fontSize:"clamp(9px,1.1vw,12px)", color:INK_MID, letterSpacing:"0.12em", marginTop:5 }}>A History Since the 15th Century · La Prima Gioielli</div>
-              <div style={{ height:1, background:`linear-gradient(to right,transparent,${RULE},transparent)`, marginTop:7 }} />
-            </div>
-
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 28px", borderBottom:`1px solid ${RULE}`, background:"rgba(0,0,0,0.03)" }}>
-              <div style={{ fontFamily:"'IM Fell English',serif", fontSize:"clamp(12px,1.8vw,17px)", fontWeight:400, fontStyle:"italic", color:INK }}>{todayStr}</div>
-              <div style={{ fontFamily:"'IM Fell English',serif", fontWeight:400, fontStyle:"italic", fontSize:"clamp(8px,0.9vw,10px)", color:INK_MID, textAlign:"right", lineHeight:1.5 }}>Special Edition<br/>Price: One Shilling</div>
-            </div>
-
-            <div style={{ display:"grid", gridTemplateColumns:"0.75fr 2.5fr 0.75fr", borderBottom:`2px double rgba(0,0,0,0.25)` }}>
-              <div style={{ padding:"13px 16px", borderRight:`1px solid ${RULE}` }}>
-                <div style={colHead}>Fashion &amp; Society</div>
-                <p style={bodyTxt}>In the courts of Versailles, a colour hitherto reserved for dawn itself became the signature of power. Madame de Pompadour ordered a shade so vivid — Rose Pompadour — that the world bent to her palette.</p>
-                <div style={orn}>— ✦ —</div>
-                <p style={bodyTxt}>Scholars of pigment record that no hue has travelled so far — from Botticelli&apos;s Venus to the ribbons of solidarity worn by millions worldwide today.</p>
-                <div style={orn}>· · ·</div>
-                <p style={bodyTxt}>Royal courts decreed that no other colour could so perfectly combine tenderness with authority. Pink was never small.</p>
-                <div style={{ border:`1.5px solid ${RULE}`, borderTop:`2px solid rgba(0,0,0,0.30)`, padding:"9px 7px", textAlign:"center", marginTop:14, background:"rgba(0,0,0,0.03)" }}>
-                  <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:8, color:INK_DIM, marginBottom:2, letterSpacing:"0.14em" }}>— Advertisement —</div>
-                  <div style={{ fontFamily:"'Cormorant Garamond'", fontSize:"clamp(13px,1.6vw,17px)", color:PINK }}>La Prima Gioielli</div>
-                  <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:9, color:INK_MID, marginTop:2 }}>Jewels for the Modern Goddess</div>
-                </div>
+              <div style={{ display:"flex", justifyContent:"space-between", padding:"5px 14px", borderBottom:`1px solid ${RULE}`, background:"rgba(0,0,0,0.03)" }}>
+                <div style={{ fontFamily:"'IM Fell English',serif", fontSize:"clamp(10px,3vw,13px)", fontWeight:400, fontStyle:"italic", color:INK }}>{todayStr}</div>
+                <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(7px,2vw,9px)", color:INK_MID, textAlign:"right", lineHeight:1.5 }}>Special Edition<br/>Price: One Shilling</div>
               </div>
-
-              <div style={{ padding:"13px 18px", display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
-                <div style={{ fontFamily:"'IM Fell English',serif", fontSize:"clamp(15px,2.6vw,28px)", fontWeight:400, color:PINK, lineHeight:1.15, textAlign:"center" }}>
-                  Women And Pink :<br/><em style={{ fontSize:"0.82em", color:INK }}>The Eternal Reign of Pink</em>
+              <div style={{ padding:"12px 14px", display:"flex", flexDirection:"column", gap:10 }}>
+                <div style={{ fontFamily:"'IM Fell English',serif", fontSize:"clamp(14px,4.5vw,20px)", fontWeight:400, color:PINK, lineHeight:1.2, textAlign:"center" }}>
+                  Women And Pink:<br/><em style={{ fontSize:"0.82em", color:INK }}>The Eternal Reign of Pink</em>
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:8, width:"100%" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   <div style={{ flex:1, height:1, background:RULE }}/><span style={{ color:INK_DIM, fontSize:11 }}>✦</span><div style={{ flex:1, height:1, background:RULE }}/>
                 </div>
-                <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(9px,1.15vw,12px)", color:PINK, textAlign:"center", lineHeight:1.55, borderLeft:`3px solid rgba(0,0,0,0.18)`, borderRight:`3px solid rgba(0,0,0,0.18)`, padding:"4px 10px" }}>
-                  &quot;A colour of divine origin — worn by queens,<br/>mourned by none, forgotten by none.&quot;
+                <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(9px,2.8vw,11px)", color:PINK, textAlign:"center", lineHeight:1.5, borderLeft:`3px solid rgba(0,0,0,0.18)`, borderRight:`3px solid rgba(0,0,0,0.18)`, padding:"4px 10px" }}>
+                  &quot;A colour of divine origin — worn by queens, mourned by none, forgotten by none.&quot;
                 </div>
-                <button
-                  onClick={() => window.scrollBy({ top: window.innerHeight * 2, behavior: "smooth" })}
-                  style={{
-                    fontFamily:      "'Barlow Condensed', sans-serif",
-                    fontWeight:      700,
-                    fontSize:        "clamp(9px,1.05vw,13px)",
-                    letterSpacing:   "0.28em",
-                    textTransform:   "uppercase",
-                    color:           "#fff",
-                    background:      "#ec9cb2",
-                    border:          "none",
-                    padding:         "10px 28px",
-                    cursor:          "pointer",
-                    alignSelf:       "center",
-                    boxShadow:       "0 3px 16px rgba(236,156,178,0.55)",
-                    animation:       "pulse-pink 2s ease-in-out infinite",
-                    flexShrink:      0,
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#d4819b"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "#ec9cb2"; }}
-                >
-                  ↓ &nbsp; Scroll for more &nbsp; ↓
-                </button>
-                <div ref={videoBoxRef} style={{ width:"100%", position:"relative", flexShrink:0, border:`2px solid rgba(0,0,0,0.30)`, boxShadow:`3px 3px 0 rgba(0,0,0,0.10)` }}>
-                  <div style={{ aspectRatio:"3/2", background:"#0a0d14", overflow:"hidden", position:"relative" }}>
-                    <video src={HERO_VIDEO_URL} autoPlay muted loop playsInline style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
-                    {[{left:0},{right:0}].map((pos,i)=>(
-                      <div key={i} style={{ position:"absolute", top:0, bottom:0, width:10, ...pos, background:"repeating-linear-gradient(to bottom,rgba(0,0,0,0.30) 0,rgba(0,0,0,0.30) 5px,transparent 5px,transparent 11px)" }}/>
-                    ))}
+                <div style={{ textAlign:"center" }}>
+                  <button onClick={() => window.scrollBy({ top: window.innerHeight * 2, behavior:"smooth" })}
+                    style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:"clamp(9px,3vw,12px)", letterSpacing:"0.28em", textTransform:"uppercase", color:"#fff", background:"#ec9cb2", border:"none", padding:"9px 22px", cursor:"pointer", boxShadow:"0 3px 16px rgba(236,156,178,0.55)" }}
+                    onMouseEnter={e=>{ e.currentTarget.style.background="#d4819b"; }}
+                    onMouseLeave={e=>{ e.currentTarget.style.background="#ec9cb2"; }}>
+                    ↓ &nbsp;Scroll for more&nbsp; ↓
+                  </button>
+                </div>
+                <div ref={videoBoxRef} style={{ width:"100%", border:`2px solid rgba(0,0,0,0.30)`, boxShadow:`3px 3px 0 rgba(0,0,0,0.10)` }}>
+                  <div style={{ aspectRatio:"4/3", overflow:"hidden", position:"relative" }}>
+                    <video src={HERO_VIDEO_URL} autoPlay muted loop playsInline preload="auto" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
                   </div>
                 </div>
-                <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(7px,0.82vw,9px)", color:INK_DIM, textAlign:"center", borderTop:`1px solid ${RULE}`, paddingTop:3, width:"100%", letterSpacing:"0.04em" }}>
+                <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(7px,2.2vw,9px)", color:INK_DIM, textAlign:"center", borderTop:`1px solid ${RULE}`, paddingTop:4 }}>
                   Fig. I — The Pink Chronicle · A Visual History from 1400 to Present Day
                 </div>
-                <div style={{ fontFamily:"'IM Fell English',serif", columnCount:2, columnGap:11, columnRule:`1px solid ${RULE}`, fontSize:"clamp(7.5px,0.9vw,10px)", color:INK, lineHeight:1.70, textAlign:"justify" }}>
-                  Since Renaissance painters first mixed rose madder with white lead, pink has existed at the intersection of beauty and power. Botticelli gave it to Venus. Pompadour gave it to politics. Eisenhower gave it to the White House. And Marilyn, bold as brass, draped herself in it while diamonds were declared a girl&apos;s best friend. The story of pink is the story of women who refused to be small — across six centuries of art, war, commerce, and revolution.
-                </div>
               </div>
-
-              <div style={{ padding:"13px 16px", borderLeft:`1px solid ${RULE}` }}>
-                <div style={colHead}>Science &amp; Discovery</div>
-                <p style={bodyTxt}>Geologists announced in 2018 that pigments recovered from the Sahara — over one billion years in age — tested positive for pink. The oldest colour ever recorded by science is an unmistakable rose.</p>
-                <div style={orn}>— ✦ —</div>
-                <p style={bodyTxt}>The pink ribbon, recognised across 195 nations, began as a simple gesture of solidarity in 1982. Today it stands as one of the most powerful symbols of collective care humanity has produced.</p>
-                <div style={orn}>· · ·</div>
-                <div style={colHead}>In This Edition</div>
-                <p style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(8px,0.95vw,10px)", color:INK, lineHeight:2 }}>
-                  · The Rose Pompadour<br/>· Marilyn&apos;s Diamonds<br/>· The 1.1B Year Pigment<br/>· Pink Ribbon, World Symbol<br/>· Today&apos;s Icons of Pink
-                </p>
-                <div style={{ border:`1px solid ${RULE}`, borderTop:`2px solid rgba(0,0,0,0.25)`, padding:"8px", textAlign:"center", marginTop:12, background:"rgba(0,0,0,0.02)" }}>
-                  <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(9px,1.1vw,12px)", color:INK }}>&quot;Pink is the navy blue<br/>of India.&quot;</div>
-                  <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:9, color:INK_MID, marginTop:4, letterSpacing:"0.10em" }}>— Diana Vreeland</div>
-                </div>
+              <div style={{ display:"flex", justifyContent:"center", padding:"5px 14px", borderTop:`1px solid ${RULE}` }}>
+                <span style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(7px,2vw,9px)", color:INK_DIM }}>✦ La Prima Gioielli · All Rights Reserved ✦</span>
               </div>
             </div>
-
-            <div style={{ display:"flex", justifyContent:"space-between", padding:"5px 28px", borderTop:`1px solid ${RULE}` }}>
-              {["Continued on Page 4 →","✦ La Prima Gioielli · All Rights Reserved ✦","← See also: Page 7"].map(t=>(
-                <span key={t} style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(7px,0.8vw,9px)", color:INK_DIM }}>{t}</span>
-              ))}
+          ) : (
+            /* ── DESKTOP: full 3-column newspaper ── */
+            <div style={{ background:`url('/img/paper1.jpg') center center / cover no-repeat`, border:"1px solid rgba(0,0,0,0.20)", boxShadow:"1px 2px 4px rgba(0,0,0,0.06),6px 14px 40px rgba(0,0,0,0.18),0 30px 70px rgba(0,0,0,0.10)", position:"relative" }}>
+              <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:25, opacity:0.28, backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")` }}/>
+              <div style={{ position:"absolute", left:"50%", top:0, bottom:0, width:1, background:"linear-gradient(to bottom,transparent 4%,rgba(0,0,0,0.07) 18%,rgba(0,0,0,0.07) 82%,transparent 96%)", pointerEvents:"none", zIndex:24 }}/>
+              <div style={{ borderBottom:"3px double rgba(0,0,0,0.35)", padding:"12px 28px 10px", textAlign:"center" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", fontFamily:"'IM Fell English',serif", fontWeight:400, fontStyle:"italic", fontSize:"clamp(7px,0.82vw,9px)", color:INK_MID, letterSpacing:"0.16em", textTransform:"uppercase", borderBottom:`1px solid ${RULE}`, paddingBottom:5, marginBottom:7 }}>
+                  <span>Vol. CCCXXI · No. 47</span><span>Est. 15th Century</span><span>Commemorative Edition</span>
+                </div>
+                <div style={{ fontFamily:"'UnifrakturMaguntia',cursive", fontSize:"clamp(2rem,5.8vw,4.2rem)", color:"#ec9cb2", lineHeight:1 }}>Women and Pink</div>
+                <div style={{ fontFamily:"'IM Fell English',serif", fontWeight:400, fontStyle:"italic", fontSize:"clamp(9px,1.1vw,12px)", color:INK_MID, letterSpacing:"0.12em", marginTop:5 }}>A History Since the 15th Century · La Prima Gioielli</div>
+                <div style={{ height:1, background:`linear-gradient(to right,transparent,${RULE},transparent)`, marginTop:7 }}/>
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 28px", borderBottom:`1px solid ${RULE}`, background:"rgba(0,0,0,0.03)" }}>
+                <div style={{ fontFamily:"'IM Fell English',serif", fontSize:"clamp(12px,1.8vw,17px)", fontWeight:400, fontStyle:"italic", color:INK }}>{todayStr}</div>
+                <div style={{ fontFamily:"'IM Fell English',serif", fontWeight:400, fontStyle:"italic", fontSize:"clamp(8px,0.9vw,10px)", color:INK_MID, textAlign:"right", lineHeight:1.5 }}>Special Edition<br/>Price: One Shilling</div>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"0.75fr 2.5fr 0.75fr", borderBottom:`2px double rgba(0,0,0,0.25)` }}>
+                <div style={{ padding:"13px 16px", borderRight:`1px solid ${RULE}` }}>
+                  <div style={colHead}>Fashion &amp; Society</div>
+                  <p style={bodyTxt}>In the courts of Versailles, a colour hitherto reserved for dawn itself became the signature of power. Madame de Pompadour ordered a shade so vivid — Rose Pompadour — that the world bent to her palette.</p>
+                  <div style={orn}>— ✦ —</div>
+                  <p style={bodyTxt}>Scholars of pigment record that no hue has travelled so far — from Botticelli&apos;s Venus to the ribbons of solidarity worn by millions worldwide today.</p>
+                  <div style={orn}>· · ·</div>
+                  <p style={bodyTxt}>Royal courts decreed that no other colour could so perfectly combine tenderness with authority. Pink was never small.</p>
+                  <div style={{ border:`1.5px solid ${RULE}`, borderTop:`2px solid rgba(0,0,0,0.30)`, padding:"9px 7px", textAlign:"center", marginTop:14, background:"rgba(0,0,0,0.03)" }}>
+                    <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:8, color:INK_DIM, marginBottom:2, letterSpacing:"0.14em" }}>— Advertisement —</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond'", fontSize:"clamp(13px,1.6vw,17px)", color:PINK }}>La Prima Gioielli</div>
+                    <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:9, color:INK_MID, marginTop:2 }}>Jewels for the Modern Goddess</div>
+                  </div>
+                </div>
+                <div style={{ padding:"13px 18px", display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+                  <div style={{ fontFamily:"'IM Fell English',serif", fontSize:"clamp(15px,2.6vw,28px)", fontWeight:400, color:PINK, lineHeight:1.15, textAlign:"center" }}>
+                    Women And Pink :<br/><em style={{ fontSize:"0.82em", color:INK }}>The Eternal Reign of Pink</em>
+                  </div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, width:"100%" }}>
+                    <div style={{ flex:1, height:1, background:RULE }}/><span style={{ color:INK_DIM, fontSize:11 }}>✦</span><div style={{ flex:1, height:1, background:RULE }}/>
+                  </div>
+                  <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(9px,1.15vw,12px)", color:PINK, textAlign:"center", lineHeight:1.55, borderLeft:`3px solid rgba(0,0,0,0.18)`, borderRight:`3px solid rgba(0,0,0,0.18)`, padding:"4px 10px" }}>
+                    &quot;A colour of divine origin — worn by queens,<br/>mourned by none, forgotten by none.&quot;
+                  </div>
+                  <button onClick={() => window.scrollBy({ top: window.innerHeight * 2, behavior:"smooth" })}
+                    style={{ fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:"clamp(9px,1.05vw,13px)", letterSpacing:"0.28em", textTransform:"uppercase", color:"#fff", background:"#ec9cb2", border:"none", padding:"10px 28px", cursor:"pointer", alignSelf:"center", boxShadow:"0 3px 16px rgba(236,156,178,0.55)", animation:"pulse-pink 2s ease-in-out infinite", flexShrink:0 }}
+                    onMouseEnter={e=>{ e.currentTarget.style.background="#d4819b"; }}
+                    onMouseLeave={e=>{ e.currentTarget.style.background="#ec9cb2"; }}>
+                    ↓ &nbsp; Scroll for more &nbsp; ↓
+                  </button>
+                  <div ref={videoBoxRef} style={{ width:"100%", position:"relative", flexShrink:0, border:`2px solid rgba(0,0,0,0.30)`, boxShadow:`3px 3px 0 rgba(0,0,0,0.10)` }}>
+                    <div style={{ aspectRatio:"3/2", background:"#fff", overflow:"hidden", position:"relative" }}>
+                      <video src={HERO_VIDEO_URL} autoPlay muted loop playsInline preload="auto" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
+                      {[{left:0},{right:0}].map((pos,i)=>(
+                        <div key={i} style={{ position:"absolute", top:0, bottom:0, width:10, ...pos, background:"repeating-linear-gradient(to bottom,rgba(0,0,0,0.30) 0,rgba(0,0,0,0.30) 5px,transparent 5px,transparent 11px)" }}/>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(7px,0.82vw,9px)", color:INK_DIM, textAlign:"center", borderTop:`1px solid ${RULE}`, paddingTop:3, width:"100%", letterSpacing:"0.04em" }}>
+                    Fig. I — The Pink Chronicle · A Visual History from 1400 to Present Day
+                  </div>
+                  <div style={{ fontFamily:"'IM Fell English',serif", columnCount:2, columnGap:11, columnRule:`1px solid ${RULE}`, fontSize:"clamp(7.5px,0.9vw,10px)", color:INK, lineHeight:1.70, textAlign:"justify" }}>
+                    Since Renaissance painters first mixed rose madder with white lead, pink has existed at the intersection of beauty and power. Botticelli gave it to Venus. Pompadour gave it to politics. Eisenhower gave it to the White House. And Marilyn, bold as brass, draped herself in it while diamonds were declared a girl&apos;s best friend. The story of pink is the story of women who refused to be small — across six centuries of art, war, commerce, and revolution.
+                  </div>
+                </div>
+                <div style={{ padding:"13px 16px", borderLeft:`1px solid ${RULE}` }}>
+                  <div style={colHead}>Science &amp; Discovery</div>
+                  <p style={bodyTxt}>Geologists announced in 2018 that pigments recovered from the Sahara — over one billion years in age — tested positive for pink. The oldest colour ever recorded by science is an unmistakable rose.</p>
+                  <div style={orn}>— ✦ —</div>
+                  <p style={bodyTxt}>The pink ribbon, recognised across 195 nations, began as a simple gesture of solidarity in 1982. Today it stands as one of the most powerful symbols of collective care humanity has produced.</p>
+                  <div style={orn}>· · ·</div>
+                  <div style={colHead}>In This Edition</div>
+                  <p style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(8px,0.95vw,10px)", color:INK, lineHeight:2 }}>
+                    · The Rose Pompadour<br/>· Marilyn&apos;s Diamonds<br/>· The 1.1B Year Pigment<br/>· Pink Ribbon, World Symbol<br/>· Today&apos;s Icons of Pink
+                  </p>
+                  <div style={{ border:`1px solid ${RULE}`, borderTop:`2px solid rgba(0,0,0,0.25)`, padding:"8px", textAlign:"center", marginTop:12, background:"rgba(0,0,0,0.02)" }}>
+                    <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(9px,1.1vw,12px)", color:INK }}>&quot;Pink is the navy blue<br/>of India.&quot;</div>
+                    <div style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:9, color:INK_MID, marginTop:4, letterSpacing:"0.10em" }}>— Diana Vreeland</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between", padding:"5px 28px", borderTop:`1px solid ${RULE}` }}>
+                {["Continued on Page 4 →","✦ La Prima Gioielli · All Rights Reserved ✦","← See also: Page 7"].map(t=>(
+                  <span key={t} style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:"clamp(7px,0.8vw,9px)", color:INK_DIM }}>{t}</span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div ref={hintRef} style={{ position:"absolute", bottom:-72, left:"50%", transform:"translateX(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:6, pointerEvents:"none", transition:"opacity 0.3s" }}>
+          {/* Scroll hint */}
+          <div ref={hintRef} style={{ position:"absolute", bottom: isMobile ? -60 : -72, left:"50%", transform:"translateX(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:6, pointerEvents:"none", transition:"opacity 0.3s" }}>
             <div className="scroll-chevron">
               <svg width="18" height="10" viewBox="0 0 20 11" fill="none"><path d="M1 1L10 10L19 1" stroke="#ec9cb2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
-            <div className="scroll-chevron" style={{ animationDelay:"0.18s", marginTop:-4 }}>
-              <svg width="18" height="10" viewBox="0 0 20 11" fill="none"><path d="M1 1L10 10L19 1" stroke="rgba(236,156,178,0.45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </div>
+            {!isMobile && (
+              <div className="scroll-chevron" style={{ animationDelay:"0.18s", marginTop:-4 }}>
+                <svg width="18" height="10" viewBox="0 0 20 11" fill="none"><path d="M1 1L10 10L19 1" stroke="rgba(236,156,178,0.45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+            )}
             <span style={{ fontFamily:"'IM Fell English',serif", fontStyle:"italic", fontSize:10, color:"rgba(30,30,30,0.40)", letterSpacing:"0.25em", whiteSpace:"nowrap", marginTop:2 }}>scroll to enter</span>
           </div>
         </div>
 
-        <div
-          ref={fullRef}
-          className="video-hero"
-          style={{ position:"absolute", inset:0, opacity:0, pointerEvents:"none", zIndex:50, height:"100%" }}
-        >
-          <video className="video-hero__media" src={HERO_VIDEO_URL} poster={HERO_POSTER} autoPlay muted loop playsInline/>
+        {/* ── Overlays — always mounted so refs never break ── */}
+        <div ref={fullRef} className="video-hero"
+          style={{ position:"absolute", inset:0, opacity:0, pointerEvents:"none", zIndex:50, height:"100%" }}>
+          <video className="video-hero__media" src={HERO_VIDEO_URL} autoPlay muted loop playsInline/>
           <div className="video-hero__overlay"/>
           <div className="video-hero__content">
             <p className="video-hero__eyebrow font-nter">La Prima Gioielli</p>
@@ -387,20 +421,9 @@ function NewspaperHero({ onPinkProgress }) {
             <span className="font-nter">Scroll</span>
           </div>
         </div>
-
-        <div
-          ref={pinkWrapRef}
-          style={{ position:"absolute", inset:0, zIndex:51, opacity:0, pointerEvents:"none" }}
-        >
-          <video
-            ref={pinkVidRef}
-            src={INK_VIDEO_URL}
-            muted
-            loop
-            playsInline
-            preload="auto"
-            style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
-          />
+        <div ref={pinkWrapRef} style={{ position:"absolute", inset:0, zIndex:51, opacity:0, pointerEvents:"none" }}>
+          <video ref={pinkVidRef} src={INK_VIDEO_URL} muted loop playsInline preload="auto"
+            style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
         </div>
 
       </div>
@@ -557,6 +580,10 @@ export default function BuccellatiHistory() {
                       <span className="year-vertical font-barlow">{event.year}</span>
                     </div>
                     <div className="content-col">
+                      <div
+                        className="event-mobile-image"
+                        style={{ backgroundImage: `url(${event.bg})` }}
+                      />
                       <p className="event-tag font-nter">{decade.label}</p>
                       <h2 className="event-title font-barlow">{event.year}</h2>
                       <p className="event-text font-nter">{event.text}</p>

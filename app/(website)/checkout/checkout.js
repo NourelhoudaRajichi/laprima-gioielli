@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import './checkout.css'
-import { useCart } from "@/components/Context"; // adjust path if needed
+import { useCart } from "@/components/Context";
+import { getStoredUser, loginUser } from "@/lib/wordpress/api";
 
 const COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo (DRC)","Congo (Republic)","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
 
@@ -50,11 +51,106 @@ function CountrySelect({ value, onChange }) {
   );
 }
 
+function LoginGate({ onLoggedIn }) {
+  const [email,    setEmail]    = useState("");
+  const [password, setPassword] = useState("");
+  const [error,    setError]    = useState("");
+  const [busy,     setBusy]     = useState(false);
+  const [f1, setF1] = useState(false);
+  const [f2, setF2] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setBusy(true); setError("");
+    try {
+      await loginUser(email, password);
+      onLoggedIn();
+    } catch (err) {
+      setError(err.message || "Invalid credentials. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#fff", display: "flex", alignItems: "center",
+      justifyContent: "center", fontFamily: "'Inter',sans-serif", padding: 24 }}>
+      <div style={{ width: "100%", maxWidth: 400 }}>
+        <p style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, fontWeight: 700,
+          textTransform: "uppercase", letterSpacing: "0.18em", color: pink, marginBottom: 16,
+          textAlign: "center" }}>La Prima Gioielli</p>
+        <h1 style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 38, fontWeight: 800,
+          textTransform: "uppercase", color: navy, marginBottom: 8, textAlign: "center" }}>
+          Sign In to Checkout
+        </h1>
+        <p style={{ fontSize: 13, color: navy, opacity: 0.5, marginBottom: 32, textAlign: "center",
+          lineHeight: 1.6 }}>
+          Please sign in to your account to continue with your purchase.
+        </p>
+
+        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+              letterSpacing: "0.1em", color: navy, marginBottom: 6 }}>
+              Email Address <span style={{ color: pink }}>*</span>
+            </label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              onFocus={() => setF1(true)} onBlur={() => setF1(false)}
+              placeholder="your@email.com" required
+              style={{ width: "100%", fontSize: 14, color: navy, background: "#fff",
+                border: `1.5px solid ${f1 ? pink : border}`, borderRadius: 6,
+                padding: "10px 14px", outline: "none", boxSizing: "border-box" }} />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+              letterSpacing: "0.1em", color: navy, marginBottom: 6 }}>
+              Password <span style={{ color: pink }}>*</span>
+            </label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+              onFocus={() => setF2(true)} onBlur={() => setF2(false)}
+              placeholder="••••••••" required
+              style={{ width: "100%", fontSize: 14, color: navy, background: "#fff",
+                border: `1.5px solid ${f2 ? pink : border}`, borderRadius: 6,
+                padding: "10px 14px", outline: "none", boxSizing: "border-box" }} />
+          </div>
+
+          {error && (
+            <p style={{ fontSize: 13, color: "#e53935", background: "#fff5f5",
+              border: "1px solid #ffcdd2", borderRadius: 6, padding: "10px 14px", margin: 0 }}>
+              {error}
+            </p>
+          )}
+
+          <button type="submit" disabled={busy}
+            style={{ padding: "13px 24px", background: busy ? blush : navy, color: busy ? navy : "#fff",
+              border: "none", borderRadius: 8, fontFamily: "'Barlow Condensed',sans-serif",
+              fontSize: 15, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em",
+              cursor: busy ? "default" : "pointer", transition: "background .2s" }}>
+            {busy ? "Signing In…" : "Sign In & Continue"}
+          </button>
+        </form>
+
+        <p style={{ fontSize: 12, color: navy, opacity: 0.4, textAlign: "center", marginTop: 24 }}>
+          Don&apos;t have an account? Create one from the main menu.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
-  // ✅ Read live cart from context
   const { cartItems, totalPrice = 0 } = useCart();
   const subtotal = cartItems.reduce((sum, item) => sum + parseFloat((item.price || "0").replace(",", "")) * item.quantity, 0);
   const total = subtotal; // shipping is free
+
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoggedIn,  setIsLoggedIn]  = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!getStoredUser());
+    setAuthChecked(true);
+  }, []);
 
   const [form, setForm] = useState({ fn:"",ln:"",co:"",tax:"",country:"",addr:"",flat:"",city:"",prov:"",zip:"",phone:"",email:"" });
   const set = k => e => setForm(f=>({...f,[k]:e.target.value}));
@@ -63,11 +159,45 @@ export default function CheckoutPage() {
   const [couponOpen, setCouponOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [placed, setPlaced] = useState(false);
+  const [orderNumber, setOrderNumber] = useState(null);
+  const [placeError, setPlaceError] = useState(null);
+  const { clearCart } = useCart();
 
-  const handlePlace = () => {
-    if (!agreed) return;
+  if (!authChecked) return null;
+  if (!isLoggedIn) return <LoginGate onLoggedIn={() => setIsLoggedIn(true)} />;
+
+  const handlePlace = async () => {
+    if (!agreed || cartItems.length === 0) return;
     setLoading(true);
-    setTimeout(()=>{ setLoading(false); setPlaced(true); }, 1600);
+    setPlaceError(null);
+    try {
+      const agentMatch = document.cookie.match(/lpg_agent_ref=([^;]+)/);
+      const agentRef   = agentMatch ? decodeURIComponent(agentMatch[1]) : null;
+
+      const orderRes = await fetch("/api/woo/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ form, cartItems, agentRef }),
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) { setPlaceError(orderData.error || "Failed to place order."); return; }
+
+      const num = orderData.orderNumber || orderData.orderId;
+      setOrderNumber(num);
+
+      await fetch("/api/send-order-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ form, cartItems, orderNumber: num }),
+      });
+
+      clearCart();
+      setPlaced(true);
+    } catch {
+      setPlaceError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (placed) return (
@@ -77,7 +207,10 @@ export default function CheckoutPage() {
         <div style={{ width:64,height:64,borderRadius:"50%",background:pink,color:"#fff",fontSize:28,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 28px" }}>✓</div>
         <h1 style={{ fontFamily:"'Barlow Condensed',sans-serif",fontSize:46,fontWeight:800,textTransform:"uppercase",color:navy,marginBottom:12 }}>Order Confirmed</h1>
         <p style={{ fontFamily:"'Inter',sans-serif",fontSize:14,color:navy,opacity:.6,lineHeight:1.7,marginBottom:24 }}>Thank you for your purchase. A confirmation email has been sent with your order details.</p>
-        <p style={{ fontFamily:"'Inter',sans-serif",fontSize:11,textTransform:"uppercase",letterSpacing:"0.18em",color:pink }}>Order #ATL-29471</p>
+        {orderNumber && <p style={{ fontFamily:"'Inter',sans-serif",fontSize:11,textTransform:"uppercase",letterSpacing:"0.18em",color:pink,marginBottom:32 }}>Order #{orderNumber}</p>}
+        <a href="/" style={{ display:"inline-block",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:800,textTransform:"uppercase",letterSpacing:".14em",color:"#fff",background:navy,borderRadius:8,padding:"14px 32px",textDecoration:"none" }}>
+          complete Shopping
+        </a>
       </div>
     </div>
   );
@@ -232,34 +365,16 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              {/* Payment box */}
-              <div style={{ border:`1.5px solid ${border}`,borderRadius:10,overflow:"hidden",marginBottom:18,background:"#f7f9fb" }}>
-                <div style={{ display:"flex",alignItems:"center",gap:10,padding:"13px 18px",borderBottom:`1px solid ${border}`,background:"#f2f6f8" }}>
-                  <svg width="17" height="17" fill="none" stroke={navy} viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" strokeWidth={1.8}/><line x1="1" y1="10" x2="23" y2="10" strokeWidth={1.8}/></svg>
-                  <span style={{ fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:700,textTransform:"uppercase",letterSpacing:".08em",color:navy }}>Credit / Debit Card</span>
+              {/* Payment box – Test Mode */}
+              <div style={{ border:`1.5px solid #fbbf24`,borderRadius:10,overflow:"hidden",marginBottom:18,background:"#fffbeb" }}>
+                <div style={{ display:"flex",alignItems:"center",gap:10,padding:"13px 18px",borderBottom:`1px solid #fde68a`,background:"#fef3c7" }}>
+                  <svg width="17" height="17" fill="none" stroke="#92400e" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                  <span style={{ fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:700,textTransform:"uppercase",letterSpacing:".08em",color:"#92400e" }}>Test Mode – No Real Payment</span>
                 </div>
-                <div style={{ padding:"16px 18px",display:"flex",flexDirection:"column",gap:12 }}>
-                  <label style={{ display:"flex",alignItems:"center",gap:10,cursor:"pointer" }}>
-                    <input type="radio" name="card" defaultChecked />
-                    <span style={{ fontFamily:"'Inter',sans-serif",fontSize:13,color:navy }}>Visa ending in 7553 <span style={{ color:muted }}>(expires 06/26)</span></span>
-                  </label>
-                  <label style={{ display:"flex",alignItems:"center",gap:10,cursor:"pointer" }}>
-                    <input type="radio" name="card" />
-                    <span style={{ fontFamily:"'Inter',sans-serif",fontSize:13,color:navy }}>Use a new payment method</span>
-                  </label>
-                  <div style={{ display:"flex",flexDirection:"column",gap:10,marginTop:2 }}>
-                    <input type="text" placeholder="Card number"
-                      style={{ width:"100%",fontFamily:"'Inter',sans-serif",fontSize:13,color:navy,background:"#fff",border:`1.5px solid ${border}`,borderRadius:6,padding:"9px 13px",outline:"none",boxSizing:"border-box" }}
-                      onFocus={e=>(e.target.style.borderColor=pink)} onBlur={e=>(e.target.style.borderColor=border)} />
-                    <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:10 }}>
-                      <input type="text" placeholder="MM / YY"
-                        style={{ fontFamily:"'Inter',sans-serif",fontSize:13,color:navy,background:"#fff",border:`1.5px solid ${border}`,borderRadius:6,padding:"9px 13px",outline:"none",boxSizing:"border-box" }}
-                        onFocus={e=>(e.target.style.borderColor=pink)} onBlur={e=>(e.target.style.borderColor=border)} />
-                      <input type="text" placeholder="CVV"
-                        style={{ fontFamily:"'Inter',sans-serif",fontSize:13,color:navy,background:"#fff",border:`1.5px solid ${border}`,borderRadius:6,padding:"9px 13px",outline:"none",boxSizing:"border-box" }}
-                        onFocus={e=>(e.target.style.borderColor=pink)} onBlur={e=>(e.target.style.borderColor=border)} />
-                    </div>
-                  </div>
+                <div style={{ padding:"16px 18px" }}>
+                  <p style={{ fontFamily:"'Inter',sans-serif",fontSize:13,color:"#78350f",lineHeight:1.6,margin:0 }}>
+                    This is a <strong>test checkout</strong>. No real charge will be made. Click "Place Order" to simulate a successful payment and receive the confirmation email.
+                  </p>
                 </div>
               </div>
 
@@ -302,6 +417,12 @@ export default function CheckoutPage() {
                     </>
                 }
               </button>
+
+              {placeError && (
+                <p style={{ fontFamily:"'Inter',sans-serif",fontSize:13,color:"#dc2626",textAlign:"center",marginTop:10 }}>
+                  {placeError}
+                </p>
+              )}
 
             </div>
 

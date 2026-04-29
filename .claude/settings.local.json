@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(ls c:/lpg/laprima-gioielli/.env*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://.laprimagioielli.com/graphql\" --max-time 5)",
+      "Bash(curl -s \"https://laprimagioielli.com/wp-json/wp/v2/posts?per_page=2&_embed=1\" --max-time 10)",
+      "Bash(python3 -c \" import sys, json data = json.load\\(sys.stdin\\) if isinstance\\(data, list\\) and data: p = data[0] print\\('id:', p.get\\('id'\\)\\) print\\('date:', p.get\\('date'\\)\\) print\\('title:', p.get\\('title',{}\\).get\\('rendered',''\\)[:60]\\) print\\('excerpt:', p.get\\('excerpt',{}\\).get\\('rendered',''\\)[:60]\\) img = p.get\\('_embedded',{}\\).get\\('wp:featuredmedia',[{}]\\)[0].get\\('source_url',''\\) print\\('image:', img[:80]\\) else: print\\('unexpected response:', str\\(data\\)[:200]\\) \")",
+      "Bash(curl -s -H \"Authorization: Basic $\\(echo -n 'ck_2eaca4d1f85fc8a4f736b86571806d086f7e22e6:cs_23f63cd51d8acca293cb4d25ac27f59fdd1223e1')",
+      "Bash(python -c \"import sys,json; o=json.load\\(sys.stdin\\); print\\('meta_data:', json.dumps\\(o.get\\('meta_data',[]\\), indent=2\\)\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)"
+    ],
+    "additionalDirectories": [
+      "c:\\lpg\\laprima-gioielli\\app\\(website)\\jewels",
+      "c:\\lpg\\laprima-gioielli\\app\\(website)\\jewels\\[type]"
+    ]
+  }
+}

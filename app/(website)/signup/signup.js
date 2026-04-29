@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { loginUser, registerUser } from '@/lib/wordpress/api';
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -11,6 +12,9 @@ export default function AuthPage() {
     confirmPassword: ''
   });
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Background images - Your custom images
   const backgroundImages = [
@@ -37,9 +41,45 @@ export default function AuthPage() {
     });
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    // Add your authentication logic here
+  const handleSubmit = async () => {
+    setError('');
+    setSuccess('');
+
+    if (isSignUp && formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        const [firstName, ...rest] = (formData.name || '').split(' ');
+        await registerUser({
+          username: formData.email,
+          email: formData.email,
+          password: formData.password,
+          firstName,
+          lastName: rest.join(' '),
+        });
+        setSuccess('Account created! You can now sign in.');
+        setIsSignUp(false);
+        setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+      } else {
+        await loginUser(formData.email, formData.password);
+        setSuccess('Welcome back!');
+        // Redirect to account/home after login
+        window.location.href = '/profile';
+      }
+    } catch (err) {
+      const msg = err?.response?.errors?.[0]?.message || err.message || 'Something went wrong.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -163,11 +203,19 @@ export default function AuthPage() {
               </div>
             )}
 
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+            {success && (
+              <p className="text-sm text-green-600 text-center">{success}</p>
+            )}
+
             <button
               onClick={handleSubmit}
-              className="w-auto px-12 py-3 bg-[#004065] text-white rounded-full font-medium hover:bg-[#ec9cb2] transition duration-200 mt-4"
+              disabled={loading}
+              className="w-auto px-12 py-3 bg-[#004065] text-white rounded-full font-medium hover:bg-[#ec9cb2] transition duration-200 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSignUp ? 'Sign Up' : 'Log in'}
+              {loading ? 'Please wait…' : isSignUp ? 'Sign Up' : 'Log in'}
             </button>
 
             {/* Toggle Sign In/Sign Up */}

@@ -6,3 +6,49 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
+
+/* WooCommerce short description — one-liner display */
+.wc-short-desc p {
+  margin: 0;
+}
+.wc-short-desc ul,
+.wc-short-desc ol {
+  display: none; /* hide spec lists from the short desc preview area */
+}
+
+/* WooCommerce product details HTML rendered inside the accordion */
+.wc-product-details p {
+  margin: 0 0 2px;
+  font-size: 0.8125rem;
+  color: #004065;
+}
+.wc-product-details strong,
+.wc-product-details b {
+  font-weight: 600;
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 2px;
+  font-size: 0.8125rem;
+  color: #004065;
+}
+.wc-product-details ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 4px;
+}
+.wc-product-details ul li::before {
+  content: "– ";
+}
+.wc-product-details li {
+  font-size: 0.8125rem;
+  color: #004065;
+  line-height: 1.5;
+}
+.wc-product-details em,
+.wc-product-details i {
+  font-style: italic;
+  font-size: 0.75rem;
+  color: #004065;
+  margin-top: 8px;
+  display: block;
+}

@@ -1,37 +1,82 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import Link from "next/link";
 import { Heart, ShoppingBag } from "lucide-react";
+import { formatPrice } from "@/lib/formatPrice";
+import { useCurrency } from "@/components/CurrencyContext";
 import Image from "next/image";
 import { useCart } from "../../../components/Context";
 
-export default function VeronaCollection() {
+function catToUI(slug = "", name = "") {
+  const s = slug.toLowerCase(), n = name.toLowerCase();
+  if (s === "bangles"   || n === "bangles")   return "bangles";
+  if (s === "bracelets" || n === "bracelets") return "bangles";
+  if (s === "earring"   || n === "earring" || s === "earrings" || n === "earrings") return "earrings";
+  if (s === "necklaces" || n === "necklaces") return "necklaces";
+  if (s.includes("bangle") || s.includes("bracelet") || n.includes("bangle") || n.includes("bracelet")) return "bangles";
+  if (s.includes("earring") || n.includes("earring")) return "earrings";
+  if (s.includes("necklace") || n.includes("necklace")) return "necklaces";
+  return null;
+}
+function guessFromName(name = "") {
+  const n = name.toLowerCase();
+  if (n.includes("bangle") || n.includes("bracelet")) return "bangles";
+  if (n.includes("earring")) return "earrings";
+  if (n.includes("necklace")) return "necklaces";
+  return "other";
+}
+function transformWcProduct(p) {
+  const images = p.images ?? [];
+  const uiCat  = p._subCat ? catToUI(p._subCat.slug || "", p._subCat.name || "") : null;
+  return {
+    id: p.id,
+    name: (p.name || "").toUpperCase(),
+    price: p.price ? formatPrice(p.price) : "—",
+    category: uiCat ?? guessFromName(p.name),
+    image: images[0]?.src ?? "",
+    hoverImage: images[1]?.src ?? "",
+    isActive: p.status === "publish" && parseFloat(p.price || "0") > 0,
+    sku: p.sku || "",
+  };
+}
+const fallbackProducts = [
+  { id: 1, name: "VERONA BANGLE WITH DIAMOND", price: "3,670.00", category: "bangles", image: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.189.jpg", hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.187.jpg", isActive: true },
+  { id: 2, name: "VERONA EARRINGS WITH DIAMONDS", price: "2,590.00", category: "earrings", image: "https://laprimagioielli.com/wp-content/uploads/2024/09/Bloomy_earrings_gold_diamonds.1441-1920x1920.jpg", hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/09/Bloomy_earrings_gold_diamonds.1442-1920x1920.jpg", isActive: true },
+];
+
+function useParallax(ref, options = {}) {
+  const { yRange = [60,-60], blur = null, blurRange = ["7px","0px","7px"], rotateRange = [-10,0,10], rotateSpeed = 1, scaleRange = [1,1,1] } = options;
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["end start", "start end"] });
+  const y      = useTransform(scrollYProgress, [0, 1], yRange);
+  const blurIn = blur ? blur.input : [0, 0.5, 1];
+  const filter = useTransform(scrollYProgress, blurIn, (blur ? blur.output : blurRange).map(b => `blur(${b})`));
+  const rotIn  = rotateRange.length === 2 ? [0, 1] : [0, 0.5, 1];
+  const rotate = useTransform(scrollYProgress, rotIn, rotateRange.length === 2 ? rotateRange : rotateRange.map(v => v * rotateSpeed));
+  const scale  = useTransform(scrollYProgress, [0, 0.5, 1], scaleRange);
+  return { y, filter, rotate, scale };
+}
+
+export default function VeronaCollection({ wcProducts }) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [hoveredProducts, setHoveredProducts] = useState({});
-  const [selectedVariations, setSelectedVariations] = useState({});
   const [addedFeedback, setAddedFeedback] = useState({});
 
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
-  const productsRef = useRef(null);
+  const { format } = useCurrency();
+  const productsRef    = useRef(null);
+  const banglesRef     = useRef(null);
+  const earringsRef    = useRef(null);
+  const necklacesRef   = useRef(null);
+
+  const pCfg = { yRange: [150, -150], blur: { input: [0.17, 0.5, 0.79], output: ["7px", "0px", "7px"] }, rotateRange: [0, -2], scaleRange: [1, 1, 1] };
+  const banglesP   = useParallax(banglesRef,   pCfg);
+  const earringsP  = useParallax(earringsRef,  pCfg);
+  const necklacesP = useParallax(necklacesRef, pCfg);
 
   const scrollToProducts = () => {
     productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const handleToggleWishlist = (product, variation) => {
-    if (isInWishlist(product.id, variation.name)) {
-      removeFromWishlist(product.id, variation.name);
-    } else {
-      addToWishlist(product, variation);
-    }
-  };
-
-  const handleAddToCart = (product, variation) => {
-    addToCart(product, variation);
-    setAddedFeedback(prev => ({ ...prev, [product.id]: true }));
-    setTimeout(() => {
-      setAddedFeedback(prev => ({ ...prev, [product.id]: false }));
-    }, 1500);
   };
 
   const categories = [
@@ -41,43 +86,7 @@ export default function VeronaCollection() {
     { id: "necklaces", name: "Necklaces" }
   ];
 
-  const products = [
-    {
-      id: 1,
-      name: "BLOOMY BANGLE WITH DIAMOND",
-      price: "3,670.00",
-      category: "bangles",
-      variations: [{ name: "Yellow Gold", defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.189.jpg", hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.187.jpg", isActive: true }]
-    },
-    {
-      id: 2,
-      name: "BLOOMY BRACELET WITH DIAMONDS",
-      price: "1,730.00",
-      category: "bangles",
-      variations: [{ name: "Yellow Gold", defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.98.jpg", hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.97.jpg", isActive: true }]
-    },
-    {
-      id: 3,
-      name: "BLOOMY BANGLE MOTHER OF PEARL",
-      price: "3,210.00",
-      category: "bangles",
-      variations: [
-        { name: "Yellow Gold", defaultImage: "/renders/bloomy%20ecommerce.413.jpg", hoverImage: "/renders/bloomy%20ecommerce.414.jpg", isActive: false },
-        { name: "Rose Gold", defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.108.jpg", hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/08/bloomy.109.jpg", isActive: true }
-      ]
-    },
-    {
-      id: 4,
-      name: "BLOOMY EARRINGS WITH DIAMONDS",
-      price: "2,590.00",
-      category: "earrings",
-      variations: [
-        { name: "Yellow Gold", defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/09/Bloomy_earrings_gold_diamonds.1441-1920x1920.jpg", hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/09/Bloomy_earrings_gold_diamonds.1442-1920x1920.jpg", isActive: true },
-        { name: "White Gold", defaultImage: "https://laprimagioielli.com/wp-content/uploads/2024/09/Bloomy_earrings_gold_diamonds.1444-1920x1920.jpg", hoverImage: "https://laprimagioielli.com/wp-content/uploads/2024/09/Bloomy_earrings_gold_diamonds.1443-1920x1920.jpg", isActive: true }
-      ]
-    }
-  ];
-
+  const products = wcProducts?.length ? wcProducts.map(transformWcProduct) : fallbackProducts;
   const filteredProducts = activeCategory === "all" ? products : products.filter(p => p.category === activeCategory);
 
   // Reusable material swatch row
@@ -104,34 +113,44 @@ export default function VeronaCollection() {
   // Reusable product card
   const ProductCard = ({ product }) => {
     const hovered = hoveredProducts[product.id] || false;
-    const currentVariation = selectedVariations[product.id] || product.variations.find(v => v.isActive) || product.variations[0];
-    const displayedImage = hovered ? currentVariation.hoverImage : currentVariation.defaultImage;
+    const displayedImage = hovered && product.hoverImage ? product.hoverImage : product.image;
     const wasAdded = addedFeedback[product.id] || false;
-    const inWishlist = isInWishlist(product.id, currentVariation.name);
+    const inWishlist = isInWishlist(product.id, product.name);
+
+    const handleCart = () => {
+      addToCart({ ...product, variations: [{ name: product.name, defaultImage: product.image }] }, { name: product.name, defaultImage: product.image });
+      setAddedFeedback(prev => ({ ...prev, [product.id]: true }));
+      setTimeout(() => setAddedFeedback(prev => ({ ...prev, [product.id]: false })), 1500);
+    };
+    const handleWishlist = () => {
+      if (isInWishlist(product.id, product.name)) removeFromWishlist(product.id, product.name);
+      else addToWishlist({ ...product, variations: [{ name: product.name, defaultImage: product.image }] }, { name: product.name, defaultImage: product.image });
+    };
 
     return (
       <div className="group flex cursor-pointer flex-col items-center text-center">
-        <div
-          className="mb-3 sm:mb-4 aspect-square w-full overflow-hidden"
+        <Link href={`/detailedPage?id=${product.id}&name=${encodeURIComponent(product.name)}&price=${encodeURIComponent(product.price)}&image=${encodeURIComponent(product.image)}`} className="mb-3 sm:mb-4 aspect-square w-full overflow-hidden block"
           onMouseEnter={() => setHoveredProducts(prev => ({ ...prev, [product.id]: true }))}
           onMouseLeave={() => setHoveredProducts(prev => ({ ...prev, [product.id]: false }))}>
           <img src={displayedImage} alt={product.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-        </div>
+        </Link>
 
-        <h3 className="mb-1 font-barlow text-xs sm:text-sm tracking-wide text-[#004065] leading-tight">{product.name}</h3>
+        <Link href={`/detailedPage?id=${product.id}&name=${encodeURIComponent(product.name)}&price=${encodeURIComponent(product.price)}&image=${encodeURIComponent(product.image)}`}>
+          <h3 className="mb-1 font-barlow text-xs sm:text-sm tracking-wide text-[#004065] leading-tight hover:text-[#ec9cb2] transition-colors">{product.name}</h3>
+        </Link>
 
-        {currentVariation.isActive ? (
+        {product.isActive ? (
           <>
             {/* Desktop: hover-reveal */}
             <div className="relative hidden sm:block h-6 w-full">
               <p className="transform font-serif text-[#004065] transition-opacity transition-transform duration-300 group-hover:-translate-y-2 group-hover:opacity-0">
-                € {product.price}
+                {format(product.price)}
               </p>
               <div className="absolute left-0 top-0 flex w-full translate-y-2 transform items-center justify-center gap-3 opacity-0 transition-opacity transition-transform duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                <button onClick={() => handleAddToCart(product, currentVariation)} className={`bg-transparent py-0 text-sm font-semibold underline ${wasAdded ? "text-[#ec9cb2]" : "text-[#004065]"}`}>
+                <button onClick={handleCart} className={`bg-transparent py-0 text-sm font-semibold underline ${wasAdded ? "text-[#ec9cb2]" : "text-[#004065]"}`}>
                   {wasAdded ? "Added ✓" : "Add to Cart"}
                 </button>
-                <button onClick={() => handleToggleWishlist(product, currentVariation)} className="flex items-center justify-center transition-transform duration-200 hover:scale-110">
+                <button onClick={handleWishlist} className="flex items-center justify-center transition-transform duration-200 hover:scale-110">
                   <Heart size={14} className={`transition-colors duration-200 ${inWishlist ? "fill-[#ec9cb2] text-[#ec9cb2]" : "text-[#004065] hover:text-[#ec9cb2]"}`} />
                 </button>
               </div>
@@ -139,15 +158,15 @@ export default function VeronaCollection() {
 
             {/* Mobile: always visible */}
             <div className="sm:hidden flex flex-col items-center gap-2 w-full mt-1">
-              <p className="font-serif text-xs text-[#004065]">€ {product.price}</p>
+              <p className="font-serif text-xs text-[#004065]">{format(product.price)}</p>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleAddToCart(product, currentVariation)}
+                  onClick={handleCart}
                   className={`flex items-center gap-1 rounded border px-2.5 py-1 text-[10px] uppercase tracking-wide font-barlow transition-colors ${wasAdded ? "border-[#ec9cb2] text-[#ec9cb2]" : "border-[#004065] text-[#004065]"}`}>
                   <ShoppingBag size={10} />
                   {wasAdded ? "Added ✓" : "Add"}
                 </button>
-                <button onClick={() => handleToggleWishlist(product, currentVariation)} className="touch-manipulation">
+                <button onClick={handleWishlist} className="touch-manipulation">
                   <Heart size={14} className={`transition-colors duration-200 ${inWishlist ? "fill-[#ec9cb2] text-[#ec9cb2]" : "text-[#004065]"}`} />
                 </button>
               </div>
@@ -156,18 +175,6 @@ export default function VeronaCollection() {
         ) : (
           <p className="font-barlow text-[9px] sm:text-[10px] text-[#ec9cb2] mt-1">AVAILABLE IN YOUR NEAREST STORE</p>
         )}
-
-        <div className="mt-2 flex gap-1.5 sm:gap-2">
-          {product.variations.map(v => (
-            <button
-              key={v.name}
-              className={`h-5 w-5 sm:h-6 sm:w-6 border touch-manipulation ${currentVariation.name === v.name ? "ring-2 ring-[#004065]" : ""}`}
-              style={{ backgroundImage: `url(${v.defaultImage})`, backgroundSize: "cover", backgroundPosition: "center" }}
-              onClick={() => setSelectedVariations(prev => ({ ...prev, [product.id]: v }))}
-              title={v.name}
-            />
-          ))}
-        </div>
       </div>
     );
   };
@@ -199,14 +206,16 @@ export default function VeronaCollection() {
       </section>
 
       {/* ── Bangles ─────────────────────────────────────────────────── */}
-      <section className="w-full py-10 sm:py-14 lg:py-16">
+      <section ref={banglesRef} className="w-full py-10 sm:py-14 lg:py-16">
         <div className="mx-auto max-w-7xl px-5 sm:px-6">
           <div className="grid items-center gap-8 sm:gap-12 md:grid-cols-2">
             <div className="flex flex-col items-center space-y-5 sm:space-y-6 text-center text-[#004065]">
-              <div className="relative flex items-center justify-center">
-                <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_bangle_3d.450.png" alt="Bangle front" className="z-20 w-28 sm:w-36 md:w-44" />
-                <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_bangle_3d.452.png" alt="Bangle back" className="z-10 -ml-12 sm:-ml-16 md:-ml-24 w-24 sm:w-28 md:w-34" />
-              </div>
+              <motion.div style={{ y: banglesP.y, filter: banglesP.filter, rotate: banglesP.rotate, scale: banglesP.scale }} className="will-change-transform">
+                <div className="relative flex items-center justify-center">
+                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_bangle_3d.450.png" alt="Bangle front" className="z-20 w-28 sm:w-36 md:w-44" />
+                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_bangle_3d.452.png" alt="Bangle back" className="z-10 -ml-12 sm:-ml-16 md:-ml-24 w-24 sm:w-28 md:w-34" />
+                </div>
+              </motion.div>
               <h2 className="font-barlow text-2xl sm:text-3xl text-[#ec9cb2]">VERONA BANGLE</h2>
               <p className="font-inter w-full text-sm sm:text-base leading-relaxed text-[#004065]">
                 The Verona bangles are all made by a 18 KT Gold, polished finish, with a sturdy clasp and diamonds.
@@ -225,17 +234,19 @@ export default function VeronaCollection() {
       </section>
 
       {/* ── Earrings ────────────────────────────────────────────────── */}
-      <section className="w-full py-10 sm:py-14 lg:py-20">
+      <section ref={earringsRef} className="w-full py-10 sm:py-14 lg:py-20">
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
           <div className="grid items-center gap-8 sm:gap-12 md:grid-cols-2">
             <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-gray-100">
               <Image src="https://laprimagioielli.com/wp-content/uploads/2025/09/LaPrimaGioielli_SS26_0196_VERONA-scaled.jpg" alt="Verona earrings" fill className="object-cover" priority />
             </div>
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="relative flex items-center justify-center">
-                <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_earring_3d.453.png" alt="Earring 2" className="relative z-20 w-20 sm:w-24 scale-75" />
-                <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_earring_3d.454.png" alt="Earring 1" className="z-20 w-24 sm:w-28 md:w-32" />
-              </div>
+              <motion.div style={{ y: earringsP.y, filter: earringsP.filter, rotate: earringsP.rotate, scale: earringsP.scale }} className="will-change-transform">
+                <div className="relative flex items-center justify-center">
+                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_earring_3d.453.png" alt="Earring 2" className="relative z-20 w-20 sm:w-24 scale-75" />
+                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_earring_3d.454.png" alt="Earring 1" className="z-20 w-24 sm:w-28 md:w-32" />
+                </div>
+              </motion.div>
               <h2 className="font-barlow text-2xl sm:text-3xl text-[#ec9cb2]">VERONA EARRINGS</h2>
               <p className="font-inter w-full text-sm sm:text-base leading-relaxed text-[#004065]">
                 The Verona earrings are all made by a 18 KT Gold, polished finish and diamonds.
@@ -251,11 +262,13 @@ export default function VeronaCollection() {
       </section>
 
       {/* ── Necklaces ───────────────────────────────────────────────── */}
-      <section className="w-full py-10 sm:py-14 lg:py-20">
+      <section ref={necklacesRef} className="w-full py-10 sm:py-14 lg:py-20">
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
           <div className="grid items-center gap-8 sm:gap-12 md:grid-cols-2">
             <div className="order-2 flex flex-col items-center justify-center space-y-4 text-center md:order-1">
-              <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_earring_3d.png" alt="Necklace" className="w-28 sm:w-36 md:w-44" />
+              <motion.div style={{ y: necklacesP.y, filter: necklacesP.filter, rotate: necklacesP.rotate, scale: necklacesP.scale }} className="will-change-transform">
+                <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/verona_earring_3d.png" alt="Necklace" className="w-28 sm:w-36 md:w-44" />
+              </motion.div>
               <h2 className="font-barlow text-2xl sm:text-3xl text-[#ec9cb2]">VERONA NECKLACES</h2>
               <p className="font-inter w-full text-sm sm:text-base leading-relaxed text-[#004065]">
                 The Verona necklaces are all made by a 18 KT Gold, polished finish, with a sturdy clasp and diamonds.

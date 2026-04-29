@@ -1,62 +1,103 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
+import { useLanguage } from "@/components/LanguageContext";
 
 // ── Reusable parallax hook ─────────────────────────────────────
-// Each render gets its own ref; scroll progress is measured
-// relative to that element's position in the viewport.
+// 0 = element bottom enters viewport bottom, 1 = element top leaves viewport top
+// Matches Elementor "start end → end start" scroll trigger.
 function useParallax(ref, options = {}) {
   const {
-    yRange    = [60, -60],      // how far it travels vertically (px)
-    blurRange = ["7px", "0px", "7px"], // blur: in → clear → out
-    rotateRange = [-10, 0, 10], // rotate while scrolling
-    scaleRange  = [0.95, 1, 0.95],
+    // Y
+    yRange       = [60, -60],
+    ySpeed       = 1,
+
+    // Blur — legacy blurRange OR enhanced blur: { input, output }
+    blurRange    = ["7px", "0px", "7px"],
+    blur         = null,
+
+    // Rotate — legacy rotateRange + rotateSpeed + baseRotate
+    //          OR enhanced rotate: { input, output } (fully custom, ignores legacy fields)
+    rotateRange  = [-10, 0, 10],
+    rotateSpeed  = 1,
+    baseRotate   = 0,           // baseline angle (deg) to correct image natural tilt
+    rotate: rotateCfg = null,   // { input: [...], output: [...] }
+
+    // Scale — legacy scaleRange OR enhanced scale: { input, output }
+    scaleRange   = [0.95, 1, 0.95],
+    scale: scaleCfg = null,     // { input: [...], output: [...] }
   } = options;
 
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start end", "end start"], // track from when element enters to when it leaves
+      offset: ["end start", "start end"], // 🔥 FIXED (Elementor-like flow)
+
   });
 
-  const y      = useTransform(scrollYProgress, [0, 1], yRange);
-  const blur   = useTransform(scrollYProgress, [0, 0.5, 1], blurRange);
-  const rotate = useTransform(scrollYProgress, [0, 0.5, 1], rotateRange);
-  const scale  = useTransform(scrollYProgress, [0, 0.5, 1], scaleRange);
+  // ── Y ──────────────────────────────────────────────────────────
+  const y = useTransform(scrollYProgress, [0, 1], [
+    yRange[0],
+    yRange[1],
+  ]);
 
-  // Convert blur array values to filter string
-  const filter = useTransform(blur, (b) => `blur(${b})`);
+  // ── Blur → filter (single-pass, no chaining) ───────────────────
+  const blurIn  = blur ? blur.input  : [0, 0.5, 1];
+  const blurOut = (blur ? blur.output : blurRange).map((b) => `blur(${b})`);
+  const filter  = useTransform(scrollYProgress, blurIn, blurOut);
+
+  // ── Rotate ─────────────────────────────────────────────────────
+  const rotIn  = rotateCfg
+    ? rotateCfg.input
+    : rotateRange.length === 2 ? [0, 1] : [0, 0.5, 1];
+  const rotOut = rotateCfg
+    ? rotateCfg.output
+    : rotateRange.map((v) => baseRotate + v * rotateSpeed);
+  const rotate = useTransform(scrollYProgress, rotIn, rotOut);
+
+  // ── Scale ──────────────────────────────────────────────────────
+  const scaleIn  = scaleCfg ? scaleCfg.input  : [0, 0.5, 1];
+  const scaleOut = scaleCfg ? scaleCfg.output : scaleRange;
+  const scale    = useTransform(scrollYProgress, scaleIn, scaleOut);
 
   return { y, filter, rotate, scale };
 }
 
 export default function CollectionsPage() {
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    document.cookie = "lpg_agent_ref=;path=/;max-age=0";
+    document.cookie = "lpg_agent_page=;path=/;max-age=0";
+  }, []);
+
   const categories = [
     {
       id: 1,
-      title: "BANGLES",
+      title: t.home.bangles,
       image:
         "https://laprimagioielli.com/wp-content/uploads/2025/08/7929B100-97F6-4D59-8A15-C20A0AAD1459-m-683x1024.jpg",
       link: "/bangles",
     },
     {
       id: 2,
-      title: "BRACELETS",
+      title: t.home.bracelets,
       image:
         "https://laprimagioielli.com/wp-content/uploads/2025/08/943CF260-52E4-4227-A4B7-6E5F1DDE4D83-m-683x1024.jpg",
       link: "/bracelets",
     },
     {
       id: 3,
-      title: "EARRINGS",
+      title: t.home.earrings,
       image:
         "https://laprimagioielli.com/wp-content/uploads/2025/08/1139905C-4954-4BB8-B105-BCBC0EB8BB6A-s.jpg",
       link: "/earrings",
     },
     {
       id: 4,
-      title: "NECKLACES",
+      title: t.home.necklaces,
       image:
         "https://laprimagioielli.com/wp-content/uploads/2025/08/DB334A47-6E63-4BE9-B343-5ABD1BCC7F3A-m-2-683x1024.jpg",
       link: "/necklaces",
@@ -69,36 +110,59 @@ export default function CollectionsPage() {
   const veronaSection   = useRef(null);
 
   // ── Parallax values per render ─────────────────────────────
-  // BLOOMY — scroll up (speed 2.2 like Elementor setting)
+  // BLOOMY — Elementor: scroll up speed 2.2, blur fade-in-out level 7 (17%-79%), rotate to left 0.2
   const bloomy = useParallax(bloomySection, {
-    yRange:     [80, -80],
-    blurRange:  ["7px", "0px", "7px"],
-    rotateRange:[-10, 0, 10],
-    scaleRange: [1.2, 1, 1.2],
+    yRange:      [150, -150],
+    ySpeed:      2.2,
+    blur:        { input: [0.17, 0.5, 0.79], output: ["7px", "0px", "7px"] },
+    rotateRange: [0, -2],
+    scaleRange:  [1, 1, 1],
   });
 
-  // VELLUTO bangle 1
-  const velluto1 = useParallax(vellutoSection, {
-    yRange:     [100, -60],
-    blurRange:  ["14px", "0px", "14px"],
-    rotateRange:[22, 0, -22],
-    scaleRange: [0.85, 1, 0.85],
-  });
+  // VELLUTO bangle 1 — Elementor: scroll up [80,-80], blur 14 (20%-80%), rotate left 0.4 (0→-4°), scale 1.2→1→1.2
+ // Bangle 1 — calmer Y travel, same clockwise rotation as velluto2
+const velluto1 = useParallax(vellutoSection, {
+  yRange: [-80, 60],       // ← FLIPPED: starts high, moves down as progress goes 0→1
+                            //   which means: enters from above, settles, exits below
 
-  // VELLUTO bangle 2 — opposite rotation for depth
-  const velluto2 = useParallax(vellutoSection, {
-    yRange:     [60, -100],
-    blurRange:  ["7px", "0px", "7px"],
-    rotateRange:[-9, 0, 9],
-    scaleRange: [0.9, 1, 0.9],
-  });
+  rotate: {
+    input:  [0, 1],
+    output: [-30, -12],    // ← FLIPPED: starts more rotated, straightens as it enters
+  },
 
-  // VERONA earring
+
+
+  blur: {
+    input:  [0.18, 0.53, 1],
+    output: ["7px", "0px", "7px"],
+  },
+});
+
+const velluto2 = useParallax(vellutoSection, {
+  yRange: [150, -150],
+
+  rotate: {
+    input:  [0, 1],
+    output: [90, 0],       // ← FLIPPED: starts landscape, rotates to portrait as it enters
+  },
+
+  scale: {
+    input:  [0, 0.5, 1],
+    output: [1.2, 0.85, 1.2],
+  },
+
+  blur: {
+    input:  [0.18, 0.53, 1],
+    output: ["7px", "0px", "7px"],
+  },
+});
+
+  // VERONA necklace — enters from above, clears at center, blurs again on exit
   const verona = useParallax(veronaSection, {
-    yRange:     [120, -80],
-    blurRange:  ["14px", "0px", "14px"],
-    rotateRange:[-10, 0, 10],
-    scaleRange: [1.2, 1, 1.2],
+    yRange:      [150, -150],
+    blur:        { input: [0.17, 0.5, 0.79], output: ["7px", "0px", "7px"] },
+    rotateRange: [0, -2],
+    scaleRange:  [1, 1, 1],
   });
 
   return (
@@ -123,7 +187,7 @@ export default function CollectionsPage() {
       <div className="min-h-screen bg-white">
 
         {/* ── BLOOMY ─────────────────────────────────────────────── */}
-        <section ref={bloomySection} className="w-full py-12 md:py-20">
+        <section className="w-full py-16 md:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
 
@@ -138,7 +202,7 @@ export default function CollectionsPage() {
               </div>
 
               {/* Text + animated render */}
-              <div className="flex flex-col items-center justify-center space-y-6 py-16 text-center text-[#004065] font-barlow">
+              <div ref={bloomySection} className="flex flex-col items-center justify-center space-y-6 py-16 text-center text-[#004065] font-barlow">
                 <motion.div
                   style={{
                     y:      bloomy.y,
@@ -157,15 +221,14 @@ export default function CollectionsPage() {
                 </motion.div>
 
                 <h2 className="text-2xl font-bold tracking-tight text-[#004065] font-barlow md:text-5xl lg:text-2xl">
-                  BLOOMY® COLLECTION
+                  {t.home.bloomyTitle}
                 </h2>
                 <p className="max-w-lg text-base leading-relaxed text-[#004065] font-inter md:text-lg">
-                  The brand new Bloomy® collection embodies the essence of growth,
-                  renewal and the beauty of nature in full bloom.
+                  {t.home.bloomyDesc}
                 </p>
-                <button className="px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded">
-                  Discover
-                </button>
+                <Link href="/bloomy" className="px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded hover:bg-[#004065] hover:text-white transition-colors">
+                  {t.home.discover}
+                </Link>
               </div>
 
             </div>
@@ -173,60 +236,71 @@ export default function CollectionsPage() {
         </section>
 
         {/* ── VELLUTO ────────────────────────────────────────────── */}
-        <section ref={vellutoSection} className="w-full py-12 md:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
+<section ref={vellutoSection} className="w-full py-12 md:py-20 overflow-visible">          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid items-end gap-8 md:grid-cols-2 md:gap-12">
 
-              {/* Text + animated renders */}
-              <div className="order-2 flex flex-col items-center justify-center space-y-6 py-16 text-center md:order-1">
-                <div className="mb-4 flex items-center justify-center gap-6">
+              {/* Left column — bangles float freely, text anchored at bottom */}
+<div 
+  className="order-2 relative md:order-1" 
+  style={{ minHeight: "750px", overflow: "visible" }}  // ← overflow: visible!
+>
+                  {/* Large bangle — lower-left, in front */}
+                  {/* Bangle 1 — large, lower-left, IN FRONT */}
+<motion.div
+  style={{
+    y:        velluto1.y,
+    filter:   velluto1.filter,
+    rotate:   velluto1.rotate,
+    scale:    velluto1.scale,
+    position: "absolute",
+    left:     "10%",
+    top:      "10%",
+    zIndex:   2,
+    transformOrigin: "center center",  // ← rotate around its own center
+  }}
+  className="will-change-transform"
+>
+  <img
+    src="https://laprimagioielli.com/wp-content/uploads/2025/02/Velluto_Bangle_2025.png"
+    alt="Velluto Bangle"
+    className="w-40 md:w-48"
+  />
+</motion.div>
 
-                  {/* Large bangle */}
-                  <motion.div
-                    style={{
-                      y:      velluto1.y,
-                      filter: velluto1.filter,
-                      rotate: velluto1.rotate,
-                      scale:  velluto1.scale,
-                    }}
-                    className="will-change-transform"
-                  >
-                    <img
-                      src="https://laprimagioielli.com/wp-content/uploads/2025/02/Velluto_Bangle_2025.1310.png"
-                      alt="Velluto Bangle"
-                      className="w-32 md:w-40"
-                    />
-                  </motion.div>
+{/* Bangle 2 — smaller, upper-right, BEHIND */}
+<motion.div
+  style={{
+    y:        velluto2.y,
+    filter:   velluto2.filter,
+    rotate:   velluto2.rotate,
+    scale:    velluto2.scale,
+    position: "absolute",
+    left:     "42%",
+    top:      "2%",
+    zIndex:   1,
+    transformOrigin: "center center",
+  }}
+  className="will-change-transform"
+>
+  <img
+    src="https://laprimagioielli.com/wp-content/uploads/2025/02/Velluto_Bangle_2025.1310.png"
+    alt="Velluto Ring"
+    className="w-36 md:w-44"
+  />
+</motion.div>
 
-                  {/* Small bangle — opposite motion for depth */}
-                  <motion.div
-                    style={{
-                      y:      velluto2.y,
-                      filter: velluto2.filter,
-                      rotate: velluto2.rotate,
-                      scale:  velluto2.scale,
-                    }}
-                    className="will-change-transform"
-                  >
-                    <img
-                      src="https://laprimagioielli.com/wp-content/uploads/2025/02/Velluto_Bangle_2025.1310.png"
-                      alt="Velluto Ring"
-                      className="w-20 md:w-24"
-                    />
-                  </motion.div>
-
+                {/* Text — anchored at bottom, never affected by bangle transforms */}
+                <div className="absolute bottom-0 w-full space-y-4 pb-8 text-center">
+                  <h2 className="text-2xl font-bold tracking-tight text-[#004065] font-barlow md:text-5xl lg:text-2xl">
+                    {t.home.vellutoTitle}
+                  </h2>
+                  <p className="max-w-lg mx-auto text-base leading-relaxed text-[#004065] font-inter md:text-lg">
+                    {t.home.vellutoDesc}
+                  </p>
+                  <Link href="/velluto" className="mt-4 inline-block px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded hover:bg-[#004065] hover:text-white transition-colors">
+                    {t.home.discover}
+                  </Link>
                 </div>
-
-                <h2 className="text-2xl font-bold tracking-tight text-[#004065] font-barlow md:text-5xl lg:text-2xl">
-                  VELLUTO COLLECTION
-                </h2>
-                <p className="max-w-lg text-base leading-relaxed text-[#004065] font-inter md:text-lg">
-                  The collection is a celebration of refined beauty, where smooth curves
-                  and polished finishes create a sense of effortless grace.
-                </p>
-                <button className="px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded">
-                  Discover
-                </button>
               </div>
 
               {/* Video */}
@@ -277,15 +351,14 @@ export default function CollectionsPage() {
                 </motion.div>
 
                 <h2 className="text-2xl font-bold tracking-tight text-[#004065] font-barlow md:text-5xl lg:text-2xl">
-                  VERONA COLLECTION
+                  {t.home.veronaTitle}
                 </h2>
                 <p className="max-w-lg text-base leading-relaxed text-[#004065] font-inter md:text-lg">
-                  A true celebration of romance, elegance, and timeless beauty,
-                  crafted with the utmost care and attention to detail.
+                  {t.home.veronaDesc}
                 </p>
-                <button className="px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded">
-                  Discover
-                </button>
+                <Link href="/verona" className="px-8 py-3 text-sm uppercase tracking-wider text-[#004065] font-barlow border border-[#004065] rounded hover:bg-[#004065] hover:text-white transition-colors">
+                  {t.home.discover}
+                </Link>
               </div>
 
             </div>
@@ -296,7 +369,7 @@ export default function CollectionsPage() {
         <section className="w-full bg-white py-12 md:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="mb-12 text-center text-3xl tracking-tight text-[#004065] font-barlow md:text-4xl lg:text-3xl">
-              DISCOVER BY CATEGORY
+              {t.home.discoverByCategory}
             </h2>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {categories.map((cat) => (

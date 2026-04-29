@@ -6,4 +6,3 @@ export default async function SignPage() {
   return <Sing settings={settings} />;
 }
 
-// export const revalidate = 60;

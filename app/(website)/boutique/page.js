@@ -7,4 +7,3 @@ export default async function BoutiquePage() {
   return <Boutique settings={settings} authors={authors} />;
 }
 
-// export const revalidate = 60;

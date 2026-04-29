@@ -7,4 +7,3 @@ export default async function stonePage() {
   return <StonePage settings={settings} authors={authors} />;
 }
 
-// export const revalidate = 60;

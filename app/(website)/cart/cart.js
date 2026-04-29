@@ -1,10 +1,7 @@
 "use client";
 import { useState } from "react";
 import './cart.css'
-// --- In a real Next.js app, replace this mock router with:
-// import { useRouter } from "next/navigation";
-// const router = useRouter();
-// router.push("/checkout")
+import { useCurrency } from "@/components/CurrencyContext";
 
 const navy   = "#004065";
 const pink   = "#ec9cb2";
@@ -17,13 +14,13 @@ const INIT = [
     img:"https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=200&q=80" },
 ];
 
-const fmt = n => n.toLocaleString("it-IT",{minimumFractionDigits:2}) + " \u20ac";
 
 export default function CartPage() {
   const [items, setItems]         = useState(INIT);
   const [coupon, setCoupon]       = useState("");
   const [couponFocus, setCF]      = useState(false);
   const [navigating, setNav]      = useState(false);
+  const { format: fmt }           = useCurrency();
 
   const updateQty = (id, d) =>
     setItems(p => p.map(it => it.id===id ? {...it,qty:Math.max(1,it.qty+d)} : it));

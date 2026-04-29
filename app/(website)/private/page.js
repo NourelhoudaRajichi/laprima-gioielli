@@ -11,4 +11,3 @@ export default async function PrivatePage() {
   );
 }
 
-// export const revalidate = 60;
