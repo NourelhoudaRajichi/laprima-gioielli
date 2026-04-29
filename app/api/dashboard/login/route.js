@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const PASSWORD = process.env.DASHBOARD_PASSWORD || "laprima2025";
+const PASSWORD = process.env.DASHBOARD_PASSWORD;
 
 export async function POST(request) {
   const { password } = await request.json();
