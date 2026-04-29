@@ -46,3 +46,6 @@ next-env.d.ts
 # Sanity CMS
 /.sanity
 /dist
+
+#claude
+.claude/
