@@ -112,43 +112,34 @@ export default function CollectionsPage() {
 
   // ── Parallax values per render ─────────────────────────────
   // BLOOMY — Elementor: scroll up speed 2.2, blur fade-in-out level 7 (17%-79%), rotate to left 0.2
+  const scrollBlur = { input: [0, 0.3, 0.7, 1], output: ["6px", "0px", "0px", "6px"] };
+
   const bloomy = useParallax(bloomySection, {
     yRange:      [150, -150],
     ySpeed:      2.2,
     rotateRange: [0, -2],
     scaleRange:  [1, 1, 1],
+    blur:        scrollBlur,
   });
 
-  // VELLUTO bangle 1 — Elementor: scroll up [80,-80], blur 14 (20%-80%), rotate left 0.4 (0→-4°), scale 1.2→1→1.2
- // Bangle 1 — calmer Y travel, same clockwise rotation as velluto2
 const velluto1 = useParallax(vellutoSection, {
   yRange: [-80, 60],
-
-  rotate: {
-    input:  [0, 1],
-    output: [-30, -12],
-  },
+  rotate: { input: [0, 1], output: [-30, -12] },
+  blur:   scrollBlur,
 });
 
 const velluto2 = useParallax(vellutoSection, {
   yRange: [150, -150],
-
-  rotate: {
-    input:  [0, 1],
-    output: [90, 0],
-  },
-
-  scale: {
-    input:  [0, 0.5, 1],
-    output: [1.2, 0.85, 1.2],
-  },
+  rotate: { input: [0, 1], output: [90, 0] },
+  scale:  { input: [0, 0.5, 1], output: [1.2, 0.85, 1.2] },
+  blur:   scrollBlur,
 });
 
-  // VERONA necklace — enters from above, clears at center, blurs again on exit
   const verona = useParallax(veronaSection, {
     yRange:      [150, -150],
     rotateRange: [0, -2],
     scaleRange:  [1, 1, 1],
+    blur:        scrollBlur,
   });
 
   return (

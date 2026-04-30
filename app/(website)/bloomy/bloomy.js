@@ -62,13 +62,17 @@ const fallbackProducts = [
 ];
 
 function useParallax(ref, options = {}) {
-  const { yRange = [60,-60], rotateRange = [0,0], scaleRange = [1,1,1] } = options;
+  const { yRange = [60,-60], rotateRange = [0,0], rotate: rotateCfg = null, scaleRange = [1,1,1], blur: blurCfg = null } = options;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["end start", "start end"] });
   const y      = useTransform(scrollYProgress, [0, 1], yRange);
-  const rotIn  = rotateRange.length === 2 ? [0, 1] : [0, 0.5, 1];
-  const rotate = useTransform(scrollYProgress, rotIn, rotateRange);
+  const rotIn  = rotateCfg ? rotateCfg.input  : (rotateRange.length === 2 ? [0, 1] : [0, 0.5, 1]);
+  const rotOut = rotateCfg ? rotateCfg.output : rotateRange;
+  const rotate = useTransform(scrollYProgress, rotIn, rotOut);
   const scale  = useTransform(scrollYProgress, [0, 0.5, 1], scaleRange);
-  return { y, rotate, scale };
+  const blurIn  = blurCfg ? blurCfg.input  : [0, 0.5, 1];
+  const blurOut = blurCfg ? blurCfg.output : ["0px", "0px", "0px"];
+  const filter  = useTransform(scrollYProgress, blurIn, blurOut.map(b => `blur(${b})`));
+  return { y, rotate, scale, filter };
 }
 
 export default function BloomyCollection({ wcProducts }) {
@@ -84,11 +88,11 @@ export default function BloomyCollection({ wcProducts }) {
   const earringsRef    = useRef(null);
   const necklacesRef   = useRef(null);
 
-  const fromTop    = { yRange: [-80,  60], rotateRange: [0, -2] };
-  const fromBottom = { yRange: [150, -150], rotateRange: [0,  2] };
-  const single     = { yRange: [150, -150], rotateRange: [0, -2] };
+  const scrollBlur = { input: [0, 0.3, 0.7, 1], output: ["6px", "0px", "0px", "6px"] };
+  const fromBottom = { yRange: [150, -150], rotateRange: [0,  2], blur: scrollBlur };
+  const single     = { yRange: [150, -150], rotateRange: [0, -2], blur: scrollBlur };
 
-  const banglesP1   = useParallax(banglesRef,   fromTop);
+  const banglesP1   = useParallax(banglesRef,   { yRange: [-80, 60], rotate: { input: [0, 1], output: [-30, -12] }, blur: scrollBlur });
   const banglesP2   = useParallax(banglesRef,   fromBottom);
   const earringsP1  = useParallax(earringsRef,  fromBottom);
   const earringsP2  = useParallax(earringsRef,  fromTop);
@@ -184,14 +188,14 @@ export default function BloomyCollection({ wcProducts }) {
             {/* Info column */}
             <div className="flex flex-col items-center space-y-5 sm:space-y-6 text-center text-[#004065]">
               <div className="relative flex items-center justify-center">
-                <motion.div style={{ y: banglesP1.y, rotate: banglesP1.rotate }} className="will-change-transform z-20">
+                <motion.div style={{ y: banglesP1.y, rotate: banglesP1.rotate, filter: banglesP1.filter }} className="will-change-transform z-20">
                   <img
                     src="https://laprimagioielli.com/wp-content/uploads/2024/09/bloomy_bangle_3d_01.png"
                     alt="Bangle front"
                     className="w-28 sm:w-36 md:w-44"
                   />
                 </motion.div>
-                <motion.div style={{ y: banglesP2.y, rotate: banglesP2.rotate }} className="will-change-transform z-10 -ml-12 sm:-ml-16 md:-ml-24">
+                <motion.div style={{ y: banglesP2.y, rotate: banglesP2.rotate, filter: banglesP2.filter }} className="will-change-transform z-10 -ml-12 sm:-ml-16 md:-ml-24">
                   <img
                     src="https://laprimagioielli.com/wp-content/uploads/2024/09/bloomy_bangle_3d_02-e1756735534547.png"
                     alt="Bangle back"
@@ -255,10 +259,10 @@ export default function BloomyCollection({ wcProducts }) {
             {/* Info column */}
             <div className="flex flex-col items-center justify-center space-y-4 sm:space-y-4 text-center">
               <div className="relative flex items-center justify-center">
-                <motion.div style={{ y: earringsP1.y, rotate: earringsP1.rotate }} className="will-change-transform z-10">
+                <motion.div style={{ y: earringsP1.y, rotate: earringsP1.rotate, filter: earringsP1.filter }} className="will-change-transform z-10">
                   <img src="https://laprimagioielli.com/wp-content/uploads/2024/09/bloomy_earrings_3d_02-1.png" alt="Earring 2" className="w-28 sm:w-36 md:w-44" />
                 </motion.div>
-                <motion.div style={{ y: earringsP2.y, rotate: earringsP2.rotate }} className="will-change-transform z-20">
+                <motion.div style={{ y: earringsP2.y, rotate: earringsP2.rotate, filter: earringsP2.filter }} className="will-change-transform z-20">
                   <img src="https://laprimagioielli.com/wp-content/uploads/2024/09/bloomy_earrings_3d_01.png" alt="Earring 1" className="w-24 sm:w-28 md:w-32" />
                 </motion.div>
               </div>
@@ -296,7 +300,7 @@ export default function BloomyCollection({ wcProducts }) {
 
             {/* Info — second on mobile (order-2 md:order-1) */}
             <div className="order-2 flex flex-col items-center justify-center space-y-4 text-center md:order-1">
-              <motion.div style={{ y: necklacesP.y, rotate: necklacesP.rotate }} className="will-change-transform">
+              <motion.div style={{ y: necklacesP.y, rotate: necklacesP.rotate, filter: necklacesP.filter }} className="will-change-transform">
                 <img src="https://laprimagioielli.com/wp-content/uploads/2024/09/bloomy_necklace_3D.jpg" alt="Necklace" className="w-28 sm:w-36 md:w-44" />
               </motion.div>
               <h2 className="font-barlow text-2xl sm:text-3xl text-[#ec9cb2]">BLOOMY NECKLACES</h2>

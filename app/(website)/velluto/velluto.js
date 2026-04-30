@@ -72,15 +72,13 @@ export default function VellutoCollection({ wcProducts }) {
   const earringsRef    = useRef(null);
   const necklacesRef   = useRef(null);
 
-  const fromBottom = { yRange: [150, -150], rotateRange: [0, 2] };
-  const single     = { yRange: [150, -150], rotateRange: [0, -2] };
+  const scrollBlur  = { input: [0, 0.3, 0.7, 1], output: ["6px", "0px", "0px", "6px"] };
 
-  const banglesP1   = useParallax(banglesRef,   { yRange: [-80,   60], rotate: { input: [0, 1], output: [-30, -12] } });
-  const banglesP2   = useParallax(banglesRef,   fromBottom);
-  const earringBlur = { input: [0, 0.4, 0.6, 1], output: ["6px", "0px", "0px", "6px"] };
-  const earringsP1  = useParallax(earringsRef,  { yRange: [-80,  60], rotateRange: [0, 0], blur: earringBlur });
-  const earringsP2  = useParallax(earringsRef,  { yRange: [80, -80], rotate: { input: [0, 1], output: [-15, -8] }, blur: earringBlur });
-  const necklacesP  = useParallax(necklacesRef, single);
+  const banglesP1   = useParallax(banglesRef,   { yRange: [-80,   60], rotate: { input: [0, 1], output: [-30, -12] }, blur: scrollBlur });
+  const banglesP2   = useParallax(banglesRef,   { yRange: [150, -150], rotateRange: [0, 2],                           blur: scrollBlur });
+  const earringsP1  = useParallax(earringsRef,  { yRange: [-80,  60],  rotateRange: [0, 0],                           blur: scrollBlur });
+  const earringsP2  = useParallax(earringsRef,  { yRange: [80,  -80],  rotate: { input: [0, 1], output: [-15, -8] },  blur: scrollBlur });
+  const necklacesP  = useParallax(necklacesRef, { yRange: [150, -150], rotateRange: [0, -2],                          blur: scrollBlur });
 
   const scrollToProducts = () => {
     productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -227,10 +225,10 @@ export default function VellutoCollection({ wcProducts }) {
           <div className="grid items-center gap-8 sm:gap-12 md:grid-cols-2">
             <div className="flex flex-col items-center space-y-5 sm:space-y-6 text-center text-[#004065]">
               <div className="relative flex items-center justify-center">
-                <motion.div style={{ y: banglesP1.y, rotate: banglesP1.rotate }} className="will-change-transform z-20">
+                <motion.div style={{ y: banglesP1.y, rotate: banglesP1.rotate, filter: banglesP1.filter }} className="will-change-transform z-20">
                   <img src="https://laprimagioielli.com/wp-content/uploads/2025/02/Velluto_Bangle_2025.1310.png" alt="Bangle front" className="w-28 sm:w-36 md:w-44" />
                 </motion.div>
-                <motion.div style={{ y: banglesP2.y, rotate: banglesP2.rotate }} className="will-change-transform z-10 -ml-12 sm:-ml-16 md:-ml-24">
+                <motion.div style={{ y: banglesP2.y, rotate: banglesP2.rotate, filter: banglesP2.filter }} className="will-change-transform z-10 -ml-12 sm:-ml-16 md:-ml-24">
                   <img src="https://laprimagioielli.com/wp-content/uploads/2025/02/Velluto_Bangle_2025.png" alt="Bangle back" className="w-24 sm:w-28 md:w-34" />
                 </motion.div>
               </div>
@@ -287,7 +285,7 @@ export default function VellutoCollection({ wcProducts }) {
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
           <div className="grid items-center gap-8 sm:gap-12 md:grid-cols-2">
             <div className="order-2 flex flex-col items-center justify-center space-y-4 text-center md:order-1">
-              <motion.div style={{ y: necklacesP.y, rotate: necklacesP.rotate }} className="will-change-transform">
+              <motion.div style={{ y: necklacesP.y, rotate: necklacesP.rotate, filter: necklacesP.filter }} className="will-change-transform">
                 <img src="https://laprimagioielli.com/wp-content/uploads/2024/05/velluto_necklace_3D.jpg" alt="Necklace" className="w-28 sm:w-36 md:w-44" />
               </motion.div>
               <h2 className="font-barlow text-2xl sm:text-3xl text-[#ec9cb2]">VELLUTO NECKLACES</h2>
