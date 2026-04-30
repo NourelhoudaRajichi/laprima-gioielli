@@ -264,7 +264,7 @@ export default function VellutoCollection({ wcProducts }) {
                   <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.459.png" alt="Front earring" className="w-24 sm:w-28 md:w-32" />
                 </motion.div>
                 <motion.div style={{ y: earringsP2.y, rotate: earringsP2.rotate, filter: earringsP2.filter }} className="will-change-transform z-10 -ml-6 sm:-ml-8">
-                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.458.png" alt="Back earring" className="w-24 sm:w-28 md:w-32" />
+                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.458.png" alt="Back earring" className="w-28 sm:w-32 md:w-36" />
                 </motion.div>
               </div>
               <h2 className="font-barlow text-2xl sm:text-3xl text-[#ec9cb2]">VELLUTO EARRINGS</h2>
