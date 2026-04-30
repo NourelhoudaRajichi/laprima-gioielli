@@ -74,8 +74,8 @@ export default function VellutoCollection({ wcProducts }) {
 
   const banglesP1   = useParallax(banglesRef,   { yRange: [-80,   60], rotate: { input: [0, 1], output: [-30, -12] } });
   const banglesP2   = useParallax(banglesRef,   fromBottom);
-  const earringsP1  = useParallax(earringsRef,  { yRange: [-80,  60], rotate: { input: [0, 1], output: [-5, 5] } });
-  const earringsP2  = useParallax(earringsRef,  { yRange: [100, -80], rotate: { input: [0, 1], output: [55, 15] } });
+  const earringsP1  = useParallax(earringsRef,  { yRange: [-80,  60], rotate: { input: [0, 1], output: [-5, 3] } });
+  const earringsP2  = useParallax(earringsRef,  { yRange: [100, -60], rotate: { input: [0, 1], output: [40, 22] } });
   const necklacesP  = useParallax(necklacesRef, single);
 
   const scrollToProducts = () => {
@@ -256,10 +256,10 @@ export default function VellutoCollection({ wcProducts }) {
             </div>
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="relative flex items-center justify-center">
-                <motion.div style={{ y: earringsP1.y, rotate: earringsP1.rotate }} className="will-change-transform z-20 scale-75">
-                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.459.png" alt="Front earring" className="w-20 sm:w-24" />
+                <motion.div style={{ y: earringsP1.y, rotate: earringsP1.rotate }} className="will-change-transform z-20">
+                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.459.png" alt="Front earring" className="w-28 sm:w-32 md:w-40" />
                 </motion.div>
-                <motion.div style={{ y: earringsP2.y, rotate: earringsP2.rotate }} className="will-change-transform z-10 -ml-4">
+                <motion.div style={{ y: earringsP2.y, rotate: earringsP2.rotate }} className="will-change-transform z-10 -ml-8 sm:-ml-10">
                   <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.458.png" alt="Back earring" className="w-20 sm:w-24 md:w-28" />
                 </motion.div>
               </div>
