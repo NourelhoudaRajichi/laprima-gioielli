@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageContext";
+import LazyVideo from "@/components/LazyVideo";
 
 // ── Reusable parallax hook ─────────────────────────────────────
 // 0 = element bottom enters viewport bottom, 1 = element top leaves viewport top
@@ -193,12 +194,7 @@ const velluto2 = useParallax(vellutoSection, {
 
               {/* Video */}
               <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-gray-100">
-                <video autoPlay loop muted playsInline className="h-full w-full object-cover">
-                  <source
-                    src="https://laprimagioielli.com/wp-content/uploads/2025/11/Untitled-design-11.mp4"
-                    type="video/mp4"
-                  />
-                </video>
+                <LazyVideo src="https://laprimagioielli.com/wp-content/uploads/2025/11/Untitled-design-11.mp4" />
               </div>
 
               {/* Text + animated render */}
@@ -305,12 +301,7 @@ const velluto2 = useParallax(vellutoSection, {
 
               {/* Video */}
               <div className="relative order-1 aspect-square w-full overflow-hidden rounded-sm bg-gray-100 md:order-2">
-                <video autoPlay loop muted playsInline className="h-full w-full object-cover">
-                  <source
-                    src="https://laprimagioielli.com/wp-content/uploads/2025/11/1110.mp4"
-                    type="video/mp4"
-                  />
-                </video>
+                <LazyVideo src="https://laprimagioielli.com/wp-content/uploads/2025/11/1110.mp4" />
               </div>
 
             </div>
@@ -324,12 +315,7 @@ const velluto2 = useParallax(vellutoSection, {
 
               {/* Video */}
               <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-gray-100">
-                <video autoPlay loop muted playsInline className="h-full w-full object-cover">
-                  <source
-                    src="https://laprimagioielli.com/wp-content/uploads/2025/11/11123-1-1.mp4"
-                    type="video/mp4"
-                  />
-                </video>
+                <LazyVideo src="https://laprimagioielli.com/wp-content/uploads/2025/11/11123-1-1.mp4" />
               </div>
 
               {/* Text + animated render */}

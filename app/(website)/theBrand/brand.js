@@ -12,7 +12,7 @@ const VALUES = [
   {
     num: "01",
     isVideo: false,
-    src: "/img/italianity.png",
+    src: "/img/italianity.jpg",
     title: "Italianity",
     text: "It is our origin, our pride, and our essence. We were born in Vicenza, a city synonymous with Italian jewelry excellence. Our creations are crafted entirely in Italy, by hand, with passion. Because that's how we grew up: surrounded by beauty, raised to recognize it.",
   },
@@ -26,14 +26,14 @@ const VALUES = [
   {
     num: "03",
     isVideo: false,
-    src: "/img/emotions.png",
+    src: "/img/emotions.jpg",
     title: "Emotion",
     text: "Emotion is our purpose. We don't just create products — we create memories, experiences, atmospheres. Everything we do begins with a feeling and ends with a moment to remember.",
   },
   {
     num: "04",
     isVideo: false,
-    src: "/img/originality.png",
+    src: "/img/originality.jpg",
     title: "Originality",
     text: "Originality is our way of staying true. We don't follow trends or expectations, but we create what feels right, even when it's different. Because being outside the rules is not a choice, it's who we are. It flows through every idea we bring to life, every gesture we refine, every experience we imagine.",
   },

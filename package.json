@@ -3,6 +3,8 @@
   "version": "3.0.0",
   "private": true,
   "scripts": {
+    "optimize-images": "node scripts/optimize-images.js",
+    "convert-pngs": "node scripts/convert-large-pngs.js",
     "dev": "next dev",
     "build": "next build",
     "postbuild": "next-sitemap",

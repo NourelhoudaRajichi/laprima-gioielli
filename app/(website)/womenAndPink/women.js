@@ -409,7 +409,7 @@ function NewspaperHero({ onPinkProgress }) {
         {/* ── Overlays — always mounted so refs never break ── */}
         <div ref={fullRef} className="video-hero"
           style={{ position:"absolute", inset:0, opacity:0, pointerEvents:"none", zIndex:50, height:"100%" }}>
-          <video className="video-hero__media" src={HERO_VIDEO_URL} autoPlay muted loop playsInline/>
+          <video className="video-hero__media" src={HERO_VIDEO_URL} autoPlay muted loop playsInline preload="metadata"/>
           <div className="video-hero__overlay"/>
           <div className="video-hero__content">
             <p className="video-hero__eyebrow font-nter">La Prima Gioielli</p>
@@ -422,7 +422,7 @@ function NewspaperHero({ onPinkProgress }) {
           </div>
         </div>
         <div ref={pinkWrapRef} style={{ position:"absolute", inset:0, zIndex:51, opacity:0, pointerEvents:"none" }}>
-          <video ref={pinkVidRef} src={INK_VIDEO_URL} muted loop playsInline preload="auto"
+          <video ref={pinkVidRef} src={INK_VIDEO_URL} muted loop playsInline preload="none"
             style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
         </div>
 

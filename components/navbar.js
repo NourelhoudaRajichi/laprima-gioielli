@@ -162,9 +162,9 @@ const LaprimaMenu = () => {
         }
       ],
       media: [
-        { type: "image", url: "/img/menu/LaPrimaGioielli_SS26_0706_VERONA.png", title: t.nav.verona, link: "/verona" },
-        { type: "image", url: "/img/menu/LaPrimaGioielli_SS26_0246_VELLUTO.png", title: t.nav.velluto, link: "/velluto" },
-        { type: "image", url: "/img/menu/LaPrimaGioielli_SS26_1543_VERONA.png", title: t.nav.bloomy, link: "/bloomy" }
+        { type: "image", url: "/img/menu/LaPrimaGioielli_SS26_0706_VERONA.jpg", title: t.nav.verona, link: "/verona" },
+        { type: "image", url: "/img/menu/LaPrimaGioielli_SS26_0246_VELLUTO.jpg", title: t.nav.velluto, link: "/velluto" },
+        { type: "image", url: "/img/menu/LaPrimaGioielli_SS26_1543_VERONA.jpg", title: t.nav.bloomy, link: "/bloomy" }
       ]
     },
     {
@@ -181,7 +181,7 @@ const LaprimaMenu = () => {
         }
       ],
       media: [
-        { type: "image", url: "/img/menu/LaPrimaGioielli_SS26_1543_VERONA.png", link: "#" }
+        { type: "image", url: "/img/menu/LaPrimaGioielli_SS26_1543_VERONA.jpg", link: "#" }
       ]
     },
     { title: t.nav.boutique, link: "/boutique" },

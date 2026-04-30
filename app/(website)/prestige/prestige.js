@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import "./prestigeCollection.css";
+import LazyVideo from "@/components/LazyVideo";
 
 const PrestigeCollection = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -186,12 +187,7 @@ const PrestigeCollection = () => {
             <div className="image-container" data-scroll>
               <div className="main-image">
                 <div class="video-circle"></div>{" "}
-                <video autoPlay muted loop playsInline>
-                  <source
-                    src="https://laprimagioielli.com/wp-content/uploads/2025/11/BLOOMY-PRESTIGE-WEBPAGE-1-1.mp4"
-                    type="video/mp4"
-                  />
-                </video>
+                <LazyVideo src="https://laprimagioielli.com/wp-content/uploads/2025/11/BLOOMY-PRESTIGE-WEBPAGE-1-1.mp4" className="h-full w-full object-cover" />
                 <div className="image-frame"></div>
               </div>
               <div className="accent-image">
@@ -258,12 +254,7 @@ const PrestigeCollection = () => {
             <div className="image-container" data-scroll>
               <div className="main-image">
                 <div class="video-circle"></div>{" "}
-                <video autoPlay muted loop playsInline>
-                  <source
-                    src="https://laprimagioielli.com/wp-content/uploads/2025/11/6666-1.mp4"
-                    type="video/mp4"
-                  />
-                </video>
+                <LazyVideo src="https://laprimagioielli.com/wp-content/uploads/2025/11/6666-1.mp4" className="h-full w-full object-cover" />
                 <div className="image-frame"></div>
               </div>
               <div className="accent-image">

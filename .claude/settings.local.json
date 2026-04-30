@@ -9,7 +9,11 @@
       "Bash(curl -s -H \"Authorization: Basic $\\(echo -n 'ck_2eaca4d1f85fc8a4f736b86571806d086f7e22e6:cs_23f63cd51d8acca293cb4d25ac27f59fdd1223e1')",
       "Bash(python -c \"import sys,json; o=json.load\\(sys.stdin\\); print\\('meta_data:', json.dumps\\(o.get\\('meta_data',[]\\), indent=2\\)\\)\")",
       "Bash(python3 -c ' *)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(grep -v \"//.*src\")",
+      "Bash(node scripts/optimize-images.js)",
+      "Bash(node scripts/convert-large-pngs.js)",
+      "Bash(grep -v \"//.*<img\")"
     ],
     "additionalDirectories": [
       "c:\\lpg\\laprima-gioielli\\app\\(website)\\jewels",

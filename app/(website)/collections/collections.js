@@ -4,6 +4,8 @@ import { React, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { useLanguage } from "@/components/LanguageContext";
+import Link from "next/link";
+import LazyVideo from "@/components/LazyVideo";
 
 const fallbackImages = [
   { id:1, image:"https://laprimagioielli.com/wp-content/uploads/2025/08/7929B100-97F6-4D59-8A15-C20A0AAD1459-m-683x1024.jpg", link:"/bangles",   key:"bangles"   },
@@ -95,19 +97,8 @@ export default function CollectionsPage({ collections }) {
       <section className="w-full py-12 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
-            <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-gray-100 ">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="h-full w-full object-cover"
-              >
-                <source
-                  src="https://laprimagioielli.com/wp-content/uploads/2025/11/Untitled-design-11.mp4"
-                  type="video/mp4"
-                />
-              </video>
+            <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-gray-100">
+              <LazyVideo src="https://laprimagioielli.com/wp-content/uploads/2025/11/Untitled-design-11.mp4" />
             </div>
 
             <div  ref={ref} className="flex flex-col items-center justify-center space-y-6 py-16 text-center text-[#004065] font-barlow">
@@ -173,18 +164,7 @@ export default function CollectionsPage({ collections }) {
             </div>
 
             <div className="relative order-1 aspect-square w-full overflow-hidden rounded-sm bg-gray-100 md:order-2">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="h-full w-full object-cover"
-              >
-                <source
-                  src="https://laprimagioielli.com/wp-content/uploads/2025/11/1110.mp4"
-                  type="video/mp4"
-                />
-              </video>
+              <LazyVideo src="https://laprimagioielli.com/wp-content/uploads/2025/11/1110.mp4" />
             </div>
           </div>
         </div>
@@ -195,18 +175,7 @@ export default function CollectionsPage({ collections }) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
             <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-gray-100">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="h-full w-full object-cover"
-              >
-                <source
-                  src="https://laprimagioielli.com/wp-content/uploads/2025/11/11123-1-1.mp4"
-                  type="video/mp4"
-                />
-              </video>
+              <LazyVideo src="https://laprimagioielli.com/wp-content/uploads/2025/11/11123-1-1.mp4" />
             </div>
 
             <div className="flex flex-col items-center justify-center space-y-6 py-16 text-center">
@@ -238,15 +207,19 @@ export default function CollectionsPage({ collections }) {
           </h2>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map((cat) => (
+            {categories.map((cat, i) => (
               <a
                 key={cat.id}
                 href={cat.link}
                 className="group relative block aspect-[3/4] overflow-hidden rounded-sm bg-gray-100"
               >
-                <img
+                <Image
                   src={cat.image}
-                  className="h-full w-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-125"
+                  alt={cat.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-125"
+                  priority={i < 2}
                 />
                 <div className="absolute inset-0 bg-black/0 transition duration-700 group-hover:bg-black/40"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
