@@ -17,7 +17,7 @@ function useParallax(ref, options = {}) {
     ySpeed       = 1,
 
     // Blur — legacy blurRange OR enhanced blur: { input, output }
-    blurRange    = ["7px", "0px", "7px"],
+    blurRange    = ["0px", "0px", "0px"],
     blur         = null,
 
     // Rotate — legacy rotateRange + rotateSpeed + baseRotate
@@ -115,7 +115,6 @@ export default function CollectionsPage() {
   const bloomy = useParallax(bloomySection, {
     yRange:      [150, -150],
     ySpeed:      2.2,
-    blur:        { input: [0.17, 0.5, 0.79], output: ["7px", "0px", "7px"] },
     rotateRange: [0, -2],
     scaleRange:  [1, 1, 1],
   });
@@ -123,19 +122,11 @@ export default function CollectionsPage() {
   // VELLUTO bangle 1 — Elementor: scroll up [80,-80], blur 14 (20%-80%), rotate left 0.4 (0→-4°), scale 1.2→1→1.2
  // Bangle 1 — calmer Y travel, same clockwise rotation as velluto2
 const velluto1 = useParallax(vellutoSection, {
-  yRange: [-80, 60],       // ← FLIPPED: starts high, moves down as progress goes 0→1
-                            //   which means: enters from above, settles, exits below
+  yRange: [-80, 60],
 
   rotate: {
     input:  [0, 1],
-    output: [-30, -12],    // ← FLIPPED: starts more rotated, straightens as it enters
-  },
-
-
-
-  blur: {
-    input:  [0.18, 0.53, 1],
-    output: ["7px", "0px", "7px"],
+    output: [-30, -12],
   },
 });
 
@@ -144,24 +135,18 @@ const velluto2 = useParallax(vellutoSection, {
 
   rotate: {
     input:  [0, 1],
-    output: [90, 0],       // ← FLIPPED: starts landscape, rotates to portrait as it enters
+    output: [90, 0],
   },
 
   scale: {
     input:  [0, 0.5, 1],
     output: [1.2, 0.85, 1.2],
   },
-
-  blur: {
-    input:  [0.18, 0.53, 1],
-    output: ["7px", "0px", "7px"],
-  },
 });
 
   // VERONA necklace — enters from above, clears at center, blurs again on exit
   const verona = useParallax(veronaSection, {
     yRange:      [150, -150],
-    blur:        { input: [0.17, 0.5, 0.79], output: ["7px", "0px", "7px"] },
     rotateRange: [0, -2],
     scaleRange:  [1, 1, 1],
   });
