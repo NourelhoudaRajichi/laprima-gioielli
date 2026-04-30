@@ -78,7 +78,7 @@ export default function VellutoCollection({ wcProducts }) {
   const banglesP1   = useParallax(banglesRef,   { yRange: [-80,   60], rotate: { input: [0, 1], output: [-30, -12] } });
   const banglesP2   = useParallax(banglesRef,   fromBottom);
   const earringBlur = { input: [0, 0.4, 0.6, 1], output: ["6px", "0px", "0px", "6px"] };
-  const earringsP1  = useParallax(earringsRef,  { yRange: [-80,  60], rotateRange: [0, -3], blur: earringBlur });
+  const earringsP1  = useParallax(earringsRef,  { yRange: [-80,  60], rotateRange: [0, 0], blur: earringBlur });
   const earringsP2  = useParallax(earringsRef,  { yRange: [80, -80], rotate: { input: [0, 1], output: [35, 25] }, blur: earringBlur });
   const necklacesP  = useParallax(necklacesRef, single);
 
@@ -261,10 +261,10 @@ export default function VellutoCollection({ wcProducts }) {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="relative flex items-center justify-center">
                 <motion.div style={{ y: earringsP1.y, rotate: earringsP1.rotate, filter: earringsP1.filter }} className="will-change-transform z-20">
-                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.459.png" alt="Front earring" className="w-20 sm:w-24 md:w-28" />
+                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.459.png" alt="Front earring" className="w-16 sm:w-20 md:w-24" />
                 </motion.div>
-                <motion.div style={{ y: earringsP2.y, rotate: earringsP2.rotate, filter: earringsP2.filter }} className="will-change-transform z-10 -ml-6 sm:-ml-8">
-                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.458.png" alt="Back earring" className="w-32 sm:w-36 md:w-44" />
+                <motion.div style={{ y: earringsP2.y, rotate: earringsP2.rotate, filter: earringsP2.filter }} className="will-change-transform z-10 -ml-4 sm:-ml-6">
+                  <img src="https://laprimagioielli.com/wp-content/uploads/2024/07/velluto_earring_3d.458.png" alt="Back earring" className="w-36 sm:w-40 md:w-48" />
                 </motion.div>
               </div>
               <h2 className="font-barlow text-2xl sm:text-3xl text-[#ec9cb2]">VELLUTO EARRINGS</h2>
