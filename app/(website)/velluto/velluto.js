@@ -72,7 +72,7 @@ export default function VellutoCollection({ wcProducts }) {
   const earringsRef    = useRef(null);
   const necklacesRef   = useRef(null);
 
-  const scrollBlur  = { input: [0, 0.3, 0.7, 1], output: ["6px", "0px", "0px", "6px"] };
+  const scrollBlur  = { input: [0, 0.5, 0.7, 1], output: ["10px", "0px", "0px", "10px"] };
 
   const banglesP1   = useParallax(banglesRef,   { yRange: [-80,   60], rotate: { input: [0, 1], output: [-30, -12] }, blur: scrollBlur });
   const banglesP2   = useParallax(banglesRef,   { yRange: [150, -150], rotateRange: [0, 2],                           blur: scrollBlur });
