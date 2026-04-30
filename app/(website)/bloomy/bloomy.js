@@ -95,7 +95,7 @@ export default function BloomyCollection({ wcProducts }) {
   const banglesP1   = useParallax(banglesRef,   { yRange: [-80, 60], rotate: { input: [0, 1], output: [-30, -12] }, blur: scrollBlur });
   const banglesP2   = useParallax(banglesRef,   fromBottom);
   const earringsP1  = useParallax(earringsRef,  fromBottom);
-  const earringsP2  = useParallax(earringsRef,  fromTop);
+  const earringsP2  = useParallax(earringsRef,  { yRange: [-80, 60], rotateRange: [0, -2], blur: scrollBlur });
   const necklacesP  = useParallax(necklacesRef, single);
 
   const scrollToProducts = () => {
