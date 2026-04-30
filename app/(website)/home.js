@@ -14,7 +14,6 @@ function useParallax(ref, options = {}) {
   const {
     // Y
     yRange       = [60, -60],
-    ySpeed       = 1,
 
     // Blur — legacy blurRange OR enhanced blur: { input, output }
     blurRange    = ["0px", "0px", "0px"],
@@ -112,7 +111,7 @@ export default function CollectionsPage() {
 
   // ── Parallax values per render ─────────────────────────────
   // BLOOMY — Elementor: scroll up speed 2.2, blur fade-in-out level 7 (17%-79%), rotate to left 0.2
-  const scrollBlur = { input: [0, 0.5, 0.7, 1], output: ["10px", "0px", "0px", "10px"] };
+  const scrollBlur = { input: [0, 0.25, 0.6, 1], output: ["10px", "0px", "0px", "10px"] };
 
   const bloomy = useParallax(bloomySection, {
     yRange:      [150, -150],

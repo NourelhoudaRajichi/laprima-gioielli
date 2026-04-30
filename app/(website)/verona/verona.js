@@ -72,7 +72,7 @@ export default function VeronaCollection({ wcProducts }) {
   const earringsRef    = useRef(null);
   const necklacesRef   = useRef(null);
 
-  const scrollBlur = { input: [0, 0.5, 0.7, 1], output: ["10px", "0px", "0px", "10px"] };
+  const scrollBlur = { input: [0, 0.25, 0.6, 1], output: ["10px", "0px", "0px", "10px"] };
   const fromTop    = { yRange: [-80,  60], rotateRange: [0, -2], blur: scrollBlur };
   const fromBottom = { yRange: [150, -150], rotateRange: [0,  2], blur: scrollBlur };
   const single     = { yRange: [150, -150], rotateRange: [0, -2], blur: scrollBlur };
