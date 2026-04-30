@@ -47,11 +47,12 @@ const fallbackProducts = [
 ];
 
 function useParallax(ref, options = {}) {
-  const { yRange = [60,-60], rotateRange = [0,0], scaleRange = [1,1,1] } = options;
+  const { yRange = [60,-60], rotateRange = [0,0], rotate: rotateCfg = null, scaleRange = [1,1,1] } = options;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["end start", "start end"] });
   const y      = useTransform(scrollYProgress, [0, 1], yRange);
-  const rotIn  = rotateRange.length === 2 ? [0, 1] : [0, 0.5, 1];
-  const rotate = useTransform(scrollYProgress, rotIn, rotateRange);
+  const rotIn  = rotateCfg ? rotateCfg.input  : (rotateRange.length === 2 ? [0, 1] : [0, 0.5, 1]);
+  const rotOut = rotateCfg ? rotateCfg.output : rotateRange;
+  const rotate = useTransform(scrollYProgress, rotIn, rotOut);
   const scale  = useTransform(scrollYProgress, [0, 0.5, 1], scaleRange);
   return { y, rotate, scale };
 }
@@ -68,11 +69,10 @@ export default function VellutoCollection({ wcProducts }) {
   const earringsRef    = useRef(null);
   const necklacesRef   = useRef(null);
 
-  const fromTop    = { yRange: [-80,  60], rotateRange: [0, -2] };
   const fromBottom = { yRange: [150, -150], rotateRange: [0,  2] };
   const single     = { yRange: [150, -150], rotateRange: [0, -2] };
 
-  const banglesP1   = useParallax(banglesRef,   fromTop);
+  const banglesP1   = useParallax(banglesRef,   { yRange: [-80, 60], rotate: { input: [0, 1], output: [-30, -12] } });
   const banglesP2   = useParallax(banglesRef,   fromBottom);
   const earringsP1  = useParallax(earringsRef,  fromBottom);
   const earringsP2  = useParallax(earringsRef,  fromTop);
