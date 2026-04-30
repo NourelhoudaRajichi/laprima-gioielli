@@ -74,8 +74,8 @@ export default function VellutoCollection({ wcProducts }) {
 
   const banglesP1   = useParallax(banglesRef,   { yRange: [-80,   60], rotate: { input: [0, 1], output: [-30, -12] } });
   const banglesP2   = useParallax(banglesRef,   fromBottom);
-  const earringsP1  = useParallax(earringsRef,  { yRange: [150, -150], rotate: { input: [0, 1], output: [30, 12] } });
-  const earringsP2  = useParallax(earringsRef,  { yRange: [-80,   60], rotate: { input: [0, 1], output: [-30, -12] } });
+  const earringsP1  = useParallax(earringsRef,  { yRange: [-80,  60], rotate: { input: [0, 1], output: [-5, 5] } });
+  const earringsP2  = useParallax(earringsRef,  { yRange: [100, -80], rotate: { input: [0, 1], output: [55, 15] } });
   const necklacesP  = useParallax(necklacesRef, single);
 
   const scrollToProducts = () => {
